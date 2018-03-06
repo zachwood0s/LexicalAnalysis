@@ -8,7 +8,6 @@ main.o: main.cpp lexar.h
 	$(CXX) $(CXXFLAGS) -c main.cpp
 
 lexar.o: lexar.h 
-	$(CXX) $(CXXFLAGS) -c lexar.cpp
 
 clean:
 	rm *.o ./main

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sstream>
 #include <string.h>
 #include "lexar.h"
 
@@ -53,7 +54,12 @@ Lexar::~Lexar(){
 	inputFile = NULL;
 }
 
+void Lexar::Error(string message){
+	printf("ERROR ln: %d, col: %d; %s\n", lineNumber,columnNumber, message.c_str());
+}
+
 bool Lexar::Init(char* fileName){
+	lineNumber = 1;
 	if(!fileName){
 		inputFile = &std::cin;
 	}
@@ -81,7 +87,11 @@ LexicalTokenType Lexar::GetKeyWord(string id){
 
 char Lexar::GetNextChar(){
 	char next = inputFile->get();
-	if(next == '\n') lineNumber++;
+	columnNumber++;
+	if(next == '\n') {
+		lineNumber++;
+		columnNumber = 0;
+	}
 	return next;
 }
 
@@ -89,21 +99,17 @@ InputToken Lexar::ReadInput() {
 	int character = GetNextChar();
 	InputToken input;
 	input.value = character;
-	if ((character>='A' && character<='Z') || (character>='a' && character<='z')){
+
+	if ((character>='A' && character<='Z') || (character>='a' && character<='z'))
 	  input.type = LETTER;	
-	}
-	else if (character>='0' && character<='9'){
+	else if (character>='0' && character<='9')
 	  input.type = NUMB;
-	}
-	else if (character == EOF){
+	else if (character == EOF)
 	  input.type = END;
-	}
-	else if (character <= ' '){
+	else if (character <= ' ')
 	  input.type = WHITE_SPACE;
-	}
-	else{
+	else
 	  input.type = NO_TYPE;
-	}
 	return input;
 }
 
@@ -135,7 +141,6 @@ LexicalToken Lexar::NextToken(){
 }
 
 LexicalToken Lexar::HandleIdentKeyword(){
-	LexicalToken returnToken;
 	string word;
 	word.push_back(currentInput.value);
 
@@ -145,6 +150,7 @@ LexicalToken Lexar::HandleIdentKeyword(){
 		currentInput = ReadInput();
 	}
 
+	LexicalToken returnToken;
 	returnToken.type = GetKeyWord(word);	
 
 	if(returnToken.type == IDENTIFIER){
@@ -219,21 +225,41 @@ LexicalToken Lexar::HandleSpecialChars(){
 
 		return returnToken;
 	}
+	if(currentInput.value == '='){
+		currentInput = ReadInput();
+		
+		if(currentInput.value == '='){
+			returnToken.type = EQUAL;
+			//Get currentInput ready for the next thing
+			currentInput = ReadInput();
+		}
+		else returnToken.type = ASSIGN;
+
+		return returnToken;
+	}
 	
 	returnToken.type = ERR;
 	returnToken.identifierName = "Unexpected token";
+	Error("Unexpected token");
+	currentInput = ReadInput();
 	return returnToken;
 
 }
 
-//TODO This isn't working the way I want it to. It's very close but
-//the comments are a little off. I think it has something to do with
-//consuming to few or to many opening/closing braces
 void Lexar::HandleComments(){
+	int startingLine = lineNumber;
 	while(currentInput.value != BlockCommentClose){
 		currentInput = ReadInput();
 		if(currentInput.value == BlockCommentOpen) HandleComments();
-		else if(currentInput.type == END) printf("error, unexpected end of input");
+		else if(currentInput.type == END) {
+			ostringstream oss;
+			oss << "Unexpected end of input. Comment was started around line: "
+				<< startingLine
+				<< " but was never finished.";
+			Error(oss.str());
+			currentInput = ReadInput();
+			return;
+		}
 	}
 	//Consume closing bracket
 	currentInput = ReadInput();

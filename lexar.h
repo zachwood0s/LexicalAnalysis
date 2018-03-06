@@ -10,8 +10,6 @@
 #define MAX_LINE_LENGTH 257
 #define MAX_IDENTIFIER_LENGTH 32
 
-using namespace std;
-
 enum InputCharType {
 	LETTER, NUMB, END, WHITE_SPACE, NO_TYPE
 };
@@ -29,7 +27,7 @@ extern const char *lexicalTokenNames[30];
 struct LexicalToken{
 	LexicalTokenType type;
 	int storedNumber;
-	string identifierName;
+	std::string identifierName;
 };
 
 struct InputToken{
@@ -43,19 +41,21 @@ class Lexar{
 		~Lexar();
 		bool Init(char* fileName);
 		LexicalToken NextToken();
-	private:
 		int lineNumber;
-		istream* inputFile;
+		int columnNumber;
+	private:
+		std::istream* inputFile;
 		InputToken currentInput;
 
 		char GetNextChar();
 		InputToken ReadInput();
-		LexicalTokenType GetKeyWord(string id);
+		LexicalTokenType GetKeyWord(std::string id);
 		LexicalToken HandleIdentKeyword();
 		LexicalToken HandleNumber();
 		LexicalToken HandleSpecialChars();
-
 		void HandleComments();
+
+		void Error(std::string message);
 };
 
 #endif
