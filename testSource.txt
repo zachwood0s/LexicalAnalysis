@@ -1,4 +1,0 @@
-if (50 < 10) then
-begin
-	write 20 ~ what is this
-end

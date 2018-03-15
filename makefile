@@ -1,16 +1,26 @@
-CXX = g++
-CXXFLAGS = -Wall -g
+CC := g++ # This is the main compiler
+# CC := clang --analyze # and comment out the linker last line for sanity
+SRCDIR := src
+BUILDDIR := build
+TARGET := bin/runner
+ 
+SRCEXT := cpp
+SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+CFLAGS := -g # -Wall
+LIB := 
+INC := -I include
 
-main: main.o lexar.o
-	$(CXX) $(CXXFLAGS) -o main main.o lexar.o
+$(TARGET): $(OBJECTS)
 
-main.o: main.cpp lexar.h 
-	$(CXX) $(CXXFLAGS) -c main.cpp
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(BUILDDIR)
+	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
-lexar.o: lexar.h 
+clean: 
+	@echo " Cleaning..."; 
+	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
 
-clean:
-	rm *.o ./main
-	
-
-
+# Tests
+tester:
+	$(CC) $(CFLAGS) test/tests.cpp $(BUILDDIR)/lexar.o $(BUILDDIR)/parser.o $(INC) $(LIB) -o bin/tester
