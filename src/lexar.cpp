@@ -77,6 +77,7 @@ bool Lexar::Init(char* fileName){
 bool Lexar::Init(string input){
     inputElement.inputText = input;
 	currentInput = ReadInput();
+	columnNumber = 0;
     return true;
 }
 
