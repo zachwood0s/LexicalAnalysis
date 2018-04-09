@@ -1,17 +1,17 @@
 
 # Formal Grammar
 
-## Non-Terminals are written in <>
+## Non-Terminals are written in <name>
 
 ## Main Program
 
-<Program>                   => <Program-Header><Block>
-<Program-Header>            => program identifier
+<Program>                   => <Program-Header><Block>                                          
+<Program-Header>            => program identifier                                               
 
-<Block>                     => <Declaration-Part><Statement-Part>
-<Declaration-Part>          => <Variable-Declaration>
-<Declaration-Part>          => <Constant-Declaration>
-<Declaration-Part>          => <Procedure-Declaration>
+<Block>                     => <Declaration-Part><Statement-Part>                               
+<Declaration-Part>          => <Variable-Declaration>                                           
+<Declaration-Part>          => <Constant-Declaration>                                           
+<Declaration-Part>          => <Procedure-Declaration>                                          
 
 <Variable-Declaration>      => var <Variable-Declaration-Part><Variable-Declaration-Pr>
 <Variable-Declaration-Pr>   => ;<Variable-Declaration-Part><Variable-Declaration-Pr>
@@ -53,7 +53,7 @@
 <Repeditive-Statement>      => <While-Statement>
 <Repeditive-Statement>      => <For-Statement>
 <While-Statement>           => while <Expression> do <Statement>
-<For-Statement>             => for Identifier := <Expression> <For-Statement-Pr>      
+<For-Statement>             => for identifier := <Expression> <For-Statement-Pr>      
 <For-Statement-Pr>          => to <Expression> <For-Statement-End>
 <For-Statement-Pr>          => downto <For-Statement-End>
 <For-Statement-End>         => do <Statement>
