@@ -12,6 +12,7 @@
 <Declaration-Part>          => <Variable-Declaration>                                           
 <Declaration-Part>          => <Constant-Declaration>                                           
 <Declaration-Part>          => <Procedure-Declaration>                                          
+<Declaration-Part>          => $
 
 <Variable-Declaration>      => var <Variable-Declaration-Part><Variable-Declaration-Pr>
 <Variable-Declaration-Pr>   => ;<Variable-Declaration-Part><Variable-Declaration-Pr>
@@ -24,6 +25,10 @@
 <Constant-Declaration-Part> => identifier = constant
 
 <Statement-Part>            => begin <Statement-Sequence> end
+
+<Identifier-List>           => identifier<Identifier-List-Pr>
+<Identifier-List-Pr>        => ,identifier<Identifier-List-Pr>
+<Identifier-List-Pr>        => $
 
 ## Procedures
 
@@ -44,6 +49,7 @@
 <Statement>                 => <Conditional-Statement>
 <Statement>                 => <Repeditive-Statement>
 <Statement>                 => <Block-Statement>
+<Statement>                 => <Regular-Statement>
 
 <Conditional-Statement>     => <If-Statement>
 <If-Statement>              => if <Expression> then <Statement> <If-Statement-Pr>
@@ -59,6 +65,16 @@
 <For-Statement-End>         => do <Statement>
 
 <Block-Statement>           => begin <Statement-Sequence> end
+
+<Regular-Statement>         => identifier<Regular-Statemnt-Pr>
+<Regular-Statement-Pr>      => <Assignment-Statement>
+<Regular-Statement-Pr>      => <Procedure-Statement>
+<Assignment-Statement>      => := <Expression>
+<Procedure-Statement>       => (<Usage-Parameter-List>)
+<Usage-Parameter-List>      => <Usage-Parameter><Usage-Parameter-List-Pr>
+<Usage-Parameter-List-Pr>   => ,<Usage-Parameter><Usage-Parameter-List-Pr>
+<Usage-Parameter-List-Pr>   => $
+<Usage-Parameter>           => <Expression>
 
 ## Expressions
 
@@ -77,9 +93,17 @@
 <Base-Expression-Pr>        => <Plus-Minus-Or><Term><Base-Expression-Pr>
 <Base-Expression-Pr>        => $
 
+<Plus-Minus-Or>             => +
+<Plus-Minus-Or>             => -
+<Plus-Minus-Or>             => or
+
 <Term>                      => <Factor><Term-Pr>
 <Term-Pr>                   => <Mult-Div-And><Factor><Term-Pr>
 <Term-Pr>                   => $
+
+<Mult-Div-And>              => *
+<Mult-Div-And>              => /
+<Mult-Div-And>              => and
 
 <Factor>                    => identifier
 <Factor>                    => number

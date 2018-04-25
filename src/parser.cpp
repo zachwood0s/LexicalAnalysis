@@ -40,8 +40,188 @@ bool Parser::Parse(){
 /************************/
 
 void Parser::Program(){
+    ProgramHeader();
+    Block();
+}
+
+void Parser::ProgramHeader(){
+    Consume(KW_PROGRAM);
+    Consume(IDENTIFIER);
+}
+
+void Parser::Block(){
+    DeclarationPart();
+    StatementPart();
+}
+
+void Parser::DeclarationPart(){
+    switch(currentToken.type){
+        case KW_VAR:
+            {
+                VariableDeclaration();
+                break;
+            }
+        case KW_CONST:
+            {
+                ConstantDeclaration();
+                break;
+            }
+        case KW_PROCEDURE:
+            {
+                ProcedureDeclaration();
+                break;
+            }
+        default: break;
+    }
+}
+
+void Parser::VariableDeclaration(){
+    Consume(KW_VAR);
+    VariableDeclarationPart();
+    VariableDeclarationPrime();
+}
+
+void Parser::VariableDeclarationPrime(){
+    if(currentToken.type == SEMICOLON){
+        VariableDeclarationPart();
+        VariableDeclarationPrime();
+    }
+}
+
+void Parser::VariableDeclarationPart(){
+    Iden
+}
+
+void Parser::ConstantDeclaration(){
 
 }
+
+void Parser::ConstantDeclarationPrime(){
+
+}
+
+void Parser::ConstantDeclarationPart(){
+
+}
+
+void Parser::StatementPart(){
+
+}
+
+/************************/
+/*      Procedures      */
+/************************/
+
+void Parser::ProcedureDeclaration(){
+
+}
+
+void Parser::ParameterList(){
+
+}
+
+void Parser::ParameterListPrime(){
+
+}
+
+void Parser::Parameter(){
+
+}
+
+void Parser::ReturnType(){
+
+}
+
+/************************/
+/*      Statements      */
+/************************/
+
+void Parser::StatementSequence(){
+
+}
+
+void Parser::StatementSequencePrime(){
+
+}
+
+void Parser::Statement(){
+
+}
+
+void Parser::ConditionalStatement(){
+
+}
+
+void Parser::IfStatment(){
+
+}
+
+void Parser::RepeditiveStatement(){
+
+}
+
+void Parser::WhileStatement(){
+
+}
+
+void Parser::ForStatement(){
+
+}
+
+void Parser::ForStatementPrime(){
+
+}
+
+void Parser::BlockStatment(){
+
+}
+
+/************************/
+/*      Expressions     */
+/************************/
+
+void Parser::Expression(){
+
+}
+
+void Parser::ExpressionPrime(){
+
+}
+
+void Parser::ComparisonOperator(){
+
+}
+
+void Parser::BaseExpression(){
+
+}
+
+void Parser::BaseExpressionPrime(){
+
+}
+
+void Parser::Term(){
+
+}
+
+void Parser::TermPrime(){
+
+}
+
+void Parser::Factor(){
+
+}
+
+
+/************************/
+/*         MISC         */
+/************************/
+
+void Parser::Type(){
+
+}
+
+
 
 
 /*

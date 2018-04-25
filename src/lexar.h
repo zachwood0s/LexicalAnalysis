@@ -20,6 +20,7 @@ enum LexicalTokenType{
 	ASSIGN, COMMA, SEMICOLON, KW_VAR, KW_CONST,
 	KW_IF, KW_THEN, KW_ELSE, KW_BEGIN, KW_END,
 	KW_WHILE, KW_DO, KW_WRITE, KW_READ,
+    KW_PROGRAM, KW_PROCEDURE,
 	EOI, ERR
 };
 extern const char *lexicalTokenNames[30];

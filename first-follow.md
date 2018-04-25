@@ -1,95 +1,120 @@
+
 # Formal Grammar
 
 ## Non-Terminals are written in <name>
 
 ## Main Program
+                                    First                        Follow
+<Program>                    | program            
+<Program-Header>             | program           
 
-01 <Program>                               
-02 <Program-Header>                        
+<Block>                      | var, const, procedure, begin
+<Declaration-Part>           | var                               begin
+<Declaration-Part>           | const           
+<Declaration-Part>           | procedure
+<Declaration-Part>           | $
 
-03 <Block>                                 
-04 <Declaration-Part>                      
-05 <Declaration-Part>                      
-06 <Declaration-Part>                      
+<Variable-Declaration>       | var                               FOLLOW(<Declaration-Part>)
+<Variable-Declaration-Pr>    | ;                                 FOLLOW(<Variable-Declaration>)
+<Variable-Declaration-Pr>    | $                                 
+<Variable-Declaration-Part>  | identifier
 
-07 <Variable-Declaration>      
-08 <Variable-Declaration-Pr>   
-09 <Variable-Declaration-Pr>   
-10 <Variable-Declaration-Part> 
+<Constant-Declaration>       | const                             FOLLOW(<Declaration-Part>)
+<Constant-Declaration-Pr>    | ;
+<Constant-Declaration-Pr>    | $                                 FOLLOW(<Constant-Declaration>) 
+<Constant-Declaration-Part>  | identifier
 
-11 <Constant-Declaration>      
-12 <Constant-Declaration-Pr>   
-13 <Constant-Declaration-Pr>   
-14 <Constant-Declaration-Part> 
+<Statement-Part>             | begin
 
-15 <Statement-Part>            
+<Identifier-List>            | identifier                        :
+<Identifier-List-Pr>         | ,                                 FOLLOW(<Identifier-List>)
+<Identifier-List-Pr>         | $
 
 ## Procedures
 
-16 <Procedure-Declaration>     
-17 <Parameter-List>            
-18 <Parameter-List-Pr>         
-19 <Parameter-List-Pr>         
-20 <Parameter>                 
-21 <Return-Type>               
-22 <Return-Type>               
+<Procedure-Declaration>      | procedure
+<Parameter-List>             | identifier
+<Parameter-List-Pr>          | ,                                 FOLLOW(<Parameter-List>)
+<Parameter-List-Pr>          | $                                 
+<Parameter>                  | identifier
+<Return-Type>                | :
+<Return-Type>                | $
 
 ## Statements
 
-23 <Statement-Sequence>        
-24 <Statement-Sequence-Pr>     
-25 <Statement-Sequence-Pr>     
+<Statement-Sequence>         | if, for, while, begin, identifier
+<Statement-Sequence-Pr>      | ;
+<Statement-Sequence-Pr>      | $ 
 
-26 <Statement>                 
-27 <Statement>                 
-28 <Statement>                 
+<Statement>                  | if 
+<Statement>                  | for, while
+<Statement>                  | begin
+<Statement>                  | identifier
 
-29 <Conditional-Statement>     
-30 <If-Statement>             
-31 <If-Statement-Pr>          
-32 <If-Statement-Pr>          
+<Conditional-Statement>      | if
+<If-Statement>               | if
+<If-Statement-Pr>            | else
+<If-Statement-Pr>            | $
 
-33 <Repeditive-Statement>     
-34 <Repeditive-Statement>     
-35 <While-Statement>          
-36 <For-Statement>              
-37 <For-Statement-Pr>         
-38 <For-Statement-Pr>         
-39 <For-Statement-End>        
+<Repeditive-Statement>       | while
+<Repeditive-Statement>       | for
+<While-Statement>            | while
+<For-Statement>              | for 
+<For-Statement-Pr>           | to 
+<For-Statement-Pr>           | downto 
+<For-Statement-End>          | do 
 
-40 <Block-Statement>          
+<Block-Statement>            | begin
+
+<Regular-Statement>          | identifier
+<Regular-Statment-Pr>        | :
+<Regular-Statement-Pr>       | (
+<Assignment-Statement>       | :
+<Procedure-Statement>        | (
+<Usage-Parameter-List>       | identifier, number, ( 
+<Usage-Parameter-List-Pr>    | ,
+<Usage-Parameter-List-Pr>    | $
+<Usage-Parameter>            | identifier, number, (
 
 ## Expressions
 
-41 <Expression>               
-42 <Expression-Pr>            
-43 <Expression-Pr>             
+<Expression>                 | identifier, number, (
+<Expression-Pr>              | =, <, >, <=, >=, <>
+<Expression-Pr>              | $ 
 
-45 <Comparison-Operator>       
-46 <Comparison-Operator>       
-47 <Comparison-Operator>       
-48 <Comparison-Operator>       
-49 <Comparison-Operator>       
-50 <Comparison-Operator>       
+<Comparison-Operator>        | = 
+<Comparison-Operator>        | <
+<Comparison-Operator>        | >
+<Comparison-Operator>        | <=
+<Comparison-Operator>        | >=
+<Comparison-Operator>        | <>
 
-51 <Base-Expression>           
-52 <Base-Expression-Pr>        
-53 <Base-Expression-Pr>        
+<Base-Expression>            | identifier, number, (
+<Base-Expression-Pr>         | +, -, or 
+<Base-Expression-Pr>         | $ 
 
-54 <Term>                      
-55 <Term-Pr>                   
-56 <Term-Pr>                   
+<Plus-Minus-Or>              | + 
+<Plus-Minus-Or>              | -
+<Plus-Minus-Or>              | or
 
-57 <Factor>                    
-58 <Factor>                    
-59 <Factor>                    
+<Term>                       | identifier, number, (
+<Term-Pr>                    | * , /, and
+<Term-Pr>                    | $
+
+<Mult-Div-And>               | *
+<Mult-Div-And>               | /
+<Mult-Div-And>               | and
+
+<Factor>                     | identifier 
+<Factor>                     | number 
+<Factor>                     | (
 
 ## Others
 
-60 <Type>                      
-61 <Type>                      
+<Type>                       | integer 
+<Type>                       | array 
 
-62 <Array-Type>                
+<Array-Type>                 | array 
 
 
 
