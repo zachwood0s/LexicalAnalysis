@@ -21,6 +21,8 @@ clean:
 	@echo " Cleaning..."; 
 	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
 
-# Tests
-tester:
-	$(CC) $(CFLAGS) test/tests.cpp $(BUILDDIR)/lexar.o $(BUILDDIR)/parser.o $(INC) $(LIB) -o bin/tester
+tests: 
+	make -C ./tests
+
+runtests:
+	make -C ./tests run

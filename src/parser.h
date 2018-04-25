@@ -17,16 +17,15 @@ class Parser{
 
         //Grammer Handlings
         
-        /*----- Expression Handling -----*/
-        void Expression();
+        // Main program
+        void Program();
+        void ProgramHeader();
+
         void Block();
-        void Line();
-        void LinePrime();
-        void E();
-        void EPrime();
-        void T();
-        void TPrime();
-        void F();
+        void DeclarationPart();
+        void VariableDeclaration();
+        void VariableDeclarationPrime();
+        void VariableDeclarationPart();
 };
 
 
