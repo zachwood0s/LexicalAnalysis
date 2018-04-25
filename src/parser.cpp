@@ -26,7 +26,7 @@ void Parser::Consume(LexicalTokenType type){
 bool Parser::Parse(){
     try{
         currentToken = lexar->NextToken();
-        E();
+        //E();
         Consume(EOI);
         return true;
     } catch(const char * msg){
@@ -35,70 +35,16 @@ bool Parser::Parse(){
     return false;
 }
 
-void Parser::E(){
-    switch(currentToken.type){
-        case NUMBER:
-        case LEFTPAREN:
-            {
-                T();
-                EPrime();
-                break;
-            }
-        default:
-            {
-                ConsumeError(NUMBER);
-                break;
-            }
-    } 
+/************************/
+/*      Main Program    */
+/************************/
+
+void Parser::Program(){
+
 }
 
-void Parser::EPrime(){
-    switch(currentToken.type){
-        case PLUS:
-        case MINUS:
-            {
-                Consume(currentToken.type);
-                T();
-                EPrime();
-                break;
-            }
-        default:
-            break;
-    }
-}
 
-void Parser::T(){
-    switch(currentToken.type){
-        case NUMBER:
-        case LEFTPAREN:
-            {
-                F();
-                TPrime();
-                break;
-            }
-        default:
-            {
-                ConsumeError(NUMBER);
-                break;
-            }
-    }
-}
-
-void Parser::TPrime(){
-    switch(currentToken.type){
-        case TIMES:
-        case DIVIDE:
-            {
-                Consume(currentToken.type);
-                F();
-                TPrime();
-                break;
-            }
-        default:
-            break;
-    }
-}
-
+/*
 void Parser::F(){
     switch(currentToken.type){
         case NUMBER:
@@ -121,4 +67,5 @@ void Parser::F(){
     }
 }
 
+*/
 

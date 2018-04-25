@@ -20,12 +20,47 @@ class Parser{
         // Main program
         void Program();
         void ProgramHeader();
-
         void Block();
         void DeclarationPart();
         void VariableDeclaration();
         void VariableDeclarationPrime();
         void VariableDeclarationPart();
+        void ConstantDeclaration();
+        void ConstantDeclarationPrime();
+        void ConstantDeclarationPart();
+        void StatementPart();
+
+        //Procedures
+        void ProcedureDeclaration();
+        void ParameterList();
+        void ParameterListPrime();
+        void Parameter();
+        void ReturnType();
+
+        //Statements
+        void StatementSequence();
+        void StatementSequencePrime();
+        void Statement();
+        void ConditionalStatement();
+        void IfStatment();
+        void RepeditiveStatement();
+        void WhileStatement();
+        void ForStatement();
+        void ForStatementPrime();
+        void BlockStatment();        
+
+        //Expressions
+        void Expression();
+        void ExpressionPrime();
+        void ComparisonOperator();
+        void BaseExpression();
+        void BaseExpressionPrime();
+        void Term();
+        void TermPrime();
+        void Factor();
+
+        //MISC
+        void Type();
 };
 
 
