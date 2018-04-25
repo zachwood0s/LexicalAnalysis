@@ -5,13 +5,14 @@
 
 using namespace std;
 
-const char *lexicalTokenNames[30] = {
+const char *lexicalTokenNames[33] = {
 	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE",
 	"EQUAL", "NOTEQUAL", "LESSTHAN", "GREATERTHAN", "LESSTHANEQ", "GREATERTHANEQ",
 	"LEFTPAREN", "RIGHTPAREN",
-	"ASSIGN", "COMMA", "SEMICOLON", "kwVAR", "kwCONST", 
+	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "kwVAR", "kwCONST", 
 	"kwIF","kwTHEN","kwELSE", "kwBEGIN", "kwEND",  
 	"kwWHILE", "kwDO", "kwWRITE", "kwREAD",
+    "kwPROGRAM", "kwPROCEDURE",
 	"EOI", "ERR"
 };
 const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={

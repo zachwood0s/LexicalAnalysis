@@ -29,6 +29,8 @@ class Parser{
         void ConstantDeclarationPrime();
         void ConstantDeclarationPart();
         void StatementPart();
+        void IdentifierList();
+        void IdentifierListPrime();
 
         //Procedures
         void ProcedureDeclaration();
@@ -43,11 +45,19 @@ class Parser{
         void Statement();
         void ConditionalStatement();
         void IfStatment();
+        void IfStatmentPrime();
         void RepeditiveStatement();
         void WhileStatement();
         void ForStatement();
         void ForStatementPrime();
         void BlockStatment();        
+        void RegularStatement();
+        void RegularStatementPrime();
+        void AssignmentStatement();
+        void ProcdureStatement();
+        void UsageParameterList();
+        void UsageParameterListPrime();
+        void UsageParameter();
 
         //Expressions
         void Expression();
@@ -55,8 +65,10 @@ class Parser{
         void ComparisonOperator();
         void BaseExpression();
         void BaseExpressionPrime();
+        void PlusMinusOr();
         void Term();
         void TermPrime();
+        void MultDivAnd();
         void Factor();
 
         //MISC

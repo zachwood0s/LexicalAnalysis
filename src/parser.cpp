@@ -83,29 +83,55 @@ void Parser::VariableDeclaration(){
 
 void Parser::VariableDeclarationPrime(){
     if(currentToken.type == SEMICOLON){
+        Consume(SEMICOLON);
         VariableDeclarationPart();
         VariableDeclarationPrime();
     }
 }
 
 void Parser::VariableDeclarationPart(){
-    Iden
+    IdentifierList();
+    Consume(COLON);
+    Type();
 }
 
 void Parser::ConstantDeclaration(){
-
+    Consume(KW_CONST);
+    ConstantDeclarationPart();
+    ConstantDeclarationPrime();
 }
 
 void Parser::ConstantDeclarationPrime(){
-
+    if(currentToken.type == SEMICOLON){
+        Consume(SEMICOLON);
+        ConstantDeclarationPart();
+        ConstantDeclarationPrime();
+    } 
 }
 
 void Parser::ConstantDeclarationPart(){
-
+    Consume(IDENTIFIER);
+    Consume(ASSIGN);
+    Consume(NUMBER);
 }
 
 void Parser::StatementPart(){
+    Consume(KW_BEGIN);
+    StatementSequence();
+    Consume(KW_END);
+}
 
+void Parser::IdentifierList(){
+    Consume(IDENTIFIER);
+    IdentifierListPrime();
+}
+
+void Parser::IdentifierListPrime(){
+    if(currentToken.type == COMMA){
+        Consume(COMMA);
+        Consume(IDENTIFIER);
+        IdentifierListPrime();
+    }
 }
 
 /************************/
@@ -113,23 +139,37 @@ void Parser::StatementPart(){
 /************************/
 
 void Parser::ProcedureDeclaration(){
-
+    Consume(KW_PROCEDURE);
+    Consume(IDENTIFIER);
+    ParameterList();
+    ReturnType();
+    Consume(SEMICOLON);
 }
 
 void Parser::ParameterList(){
-
+    Parameter();
+    ParameterListPrime();
 }
 
 void Parser::ParameterListPrime(){
-
+    if(currentToken.type == COMMA){
+        Consume(COMMA);
+        Parameter();
+        ParameterListPrime();
+    }
 }
 
 void Parser::Parameter(){
-
+    Consume(IDENTIFIER);
+    Consume(COLON);
+    Type();
 }
 
 void Parser::ReturnType(){
-
+    if(currentToken.type == COLON){
+        Consume(COLON);
+        Type();
+    }
 }
 
 /************************/
@@ -137,44 +177,134 @@ void Parser::ReturnType(){
 /************************/
 
 void Parser::StatementSequence(){
-
+    Statement();
+    StatementSequencePrime();
 }
 
 void Parser::StatementSequencePrime(){
-
+    if(currentToken.type == SEMICOLON){
+        Consume(SEMICOLON);
+        Statement();
+        StatementSequencePrime();
+    }
 }
 
 void Parser::Statement(){
-
+    switch(currentToken.type){
+        case KW_IF:
+            {
+                ConditionalStatement();
+                break;
+            }
+        case KW_FOR:
+        case KW_WHILE:
+            {
+                RepeditiveStatement();
+                break;
+            }
+        case KW_BEGIN:
+            {
+                BlockStatment();
+                break;
+            }
+        default:
+            {
+                RegularStatement();
+                break;
+            }
+    }
 }
 
+//Only here so I could add a switch or something later
 void Parser::ConditionalStatement(){
-
+    IfStatment();
 }
 
 void Parser::IfStatment(){
+    Consume(KW_IF);
+    Expression();
+    Consume(KW_THEN);
+    Statement();
+    IfStatmentPrime();
+}
 
+void Parser::IfStatmentPrime(){
+    if(currentToken.type == KW_ELSE){
+        Consume(KW_ELSE);
+        Statement();
+    }
 }
 
 void Parser::RepeditiveStatement(){
-
+    switch(currentToken.type){
+        case KW_FOR:
+            {
+                ForStatement();
+                break;
+            }
+        case KW_WHILE:
+            {
+                WhileStatement();
+                break;
+            }
+        default:
+            {
+                ConsumeError(KW_FOR);
+                break;
+            }
+    }
 }
 
 void Parser::WhileStatement(){
-
+    Consume(KW_WHILE);
+    Expression();
+    Consume(KW_DO);
+    Statement();
 }
 
 void Parser::ForStatement(){
-
+    Consume(KW_FOR);
+    Consume(IDENTIFIER);
+    Consume(ASSIGN);
+    Expression();
+    ForStatementPrime();
 }
 
 void Parser::ForStatementPrime(){
-
 }
 
 void Parser::BlockStatment(){
 
 }
+
+void Parser::RegularStatement(){
+
+}
+
+void Parser::RegularStatementPrime(){
+
+}
+
+void Parser::AssignmentStatement(){
+
+}
+
+void Parser::ProcdureStatement(){
+
+}
+
+void Parser::UsageParameterList(){
+
+}
+
+void Parser::UsageParameterListPrime(){
+
+}
+
+void Parser::UsageParameter(){
+
+}
+
 
 /************************/
 /*      Expressions     */
@@ -204,7 +334,15 @@ void Parser::Term(){
 
 }
 
+void Parser::PlusMinusOr(){
+
+}
+
 void Parser::TermPrime(){
+
+}
+
+void Parser::MultDivAnd(){
 
 }
 
