@@ -42,7 +42,7 @@ TEST_CASE("Tokenization is successful", "[lexar]"){
         REQUIRE(lexar.NextToken().type == KW_END);
     }
     SECTION("Handling comments and operators"){
-        lexar.Init(std::string("{comments} + == - * / ~"));
+        lexar.Init(std::string("{comments} + = - * / ~"));
         REQUIRE(lexar.NextToken().type == PLUS);
         REQUIRE(lexar.NextToken().type == EQUAL);
         REQUIRE(lexar.NextToken().type == MINUS);
@@ -85,60 +85,12 @@ TEST_CASE("Tokenization is successful", "[lexar]"){
 TEST_CASE("Parsing successful", "[parser]"){
     Lexar* lexar = new Lexar();
     Parser parser = Parser(lexar);
-    SECTION("Basic addition"){
-        lexar->Init(std::string("3 + 4"));
+    SECTION("Prog1"){
+        lexar->Init("./testPrograms/prog1");
         REQUIRE(parser.Parse());
     }
-    SECTION("Basic subtraction"){
-        lexar->Init(std::string("3 - 4"));
+    SECTION("Prog2"){
+        lexar->Init("./testPrograms/prog2");
         REQUIRE(parser.Parse());
-    }
-    SECTION("Basic mult"){
-        lexar->Init(std::string("3 * 4"));
-        REQUIRE(parser.Parse());
-    }
-    SECTION("Basic div"){
-        lexar->Init(std::string("3 / 4"));
-        REQUIRE(parser.Parse());
-    }
-    SECTION("Basic paren"){
-        lexar->Init(std::string("(3)"));
-        REQUIRE(parser.Parse());
-    }
-    SECTION("Paren"){
-        lexar->Init(std::string("(3 + 4 - (3 * 5) / 4)"));
-        REQUIRE(parser.Parse());
-    }
-    SECTION("Error1"){
-        lexar->Init(std::string("3 +"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error2"){
-        lexar->Init(std::string("+ 3"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error3"){
-        lexar->Init(std::string("3 + ( "));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error4"){
-        lexar->Init(std::string("3 + ( 3 + )"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error5"){
-        lexar->Init(std::string("3 + ( 3 + 5 ) /"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error6"){
-        lexar->Init(std::string("3 + ( ) / 4"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error7"){
-        lexar->Init(std::string("3 + 4 ) / 4"));
-        REQUIRE(!parser.Parse());
-    }
-    SECTION("Error8"){
-        lexar->Init(std::string("3 + ( 4 "));
-        REQUIRE(!parser.Parse());
     }
 }

@@ -8,6 +8,7 @@ Parser::Parser(Lexar* lexar){
 }
 
 void Parser::ConsumeError(LexicalTokenType type){
+    printf("ERROR at line: %d col: %d\n", lexar->lineNumber, lexar->columnNumber);
     printf("Expected type of '%s', got type of '%s'\n",
             lexicalTokenNames[type],
             lexicalTokenNames[currentToken.type]);
@@ -26,7 +27,7 @@ void Parser::Consume(LexicalTokenType type){
 bool Parser::Parse(){
     try{
         currentToken = lexar->NextToken();
-        //E();
+        Program();
         Consume(EOI);
         return true;
     } catch(const char * msg){
@@ -47,6 +48,7 @@ void Parser::Program(){
 void Parser::ProgramHeader(){
     Consume(KW_PROGRAM);
     Consume(IDENTIFIER);
+    Consume(SEMICOLON);
 }
 
 void Parser::Block(){
@@ -59,16 +61,19 @@ void Parser::DeclarationPart(){
         case KW_VAR:
             {
                 VariableDeclaration();
+                DeclarationPart();
                 break;
             }
         case KW_CONST:
             {
                 ConstantDeclaration();
+                DeclarationPart();
                 break;
             }
         case KW_PROCEDURE:
             {
                 ProcedureDeclaration();
+                DeclarationPart();
                 break;
             }
         default: break;
@@ -82,8 +87,7 @@ void Parser::VariableDeclaration(){
 }
 
 void Parser::VariableDeclarationPrime(){
-    if(currentToken.type == SEMICOLON){
-        Consume(SEMICOLON);
+    if(currentToken.type == IDENTIFIER){
         VariableDeclarationPart();
         VariableDeclarationPrime();
     }
@@ -93,6 +97,7 @@ void Parser::VariableDeclarationPart(){
     IdentifierList();
     Consume(COLON);
     Type();
+    Consume(SEMICOLON);
 }
 
 void Parser::ConstantDeclaration(){
@@ -102,8 +107,7 @@ void Parser::ConstantDeclaration(){
 }
 
 void Parser::ConstantDeclarationPrime(){
-    if(currentToken.type == SEMICOLON){
-        Consume(SEMICOLON);
+    if(currentToken.type == IDENTIFIER){
         ConstantDeclarationPart();
         ConstantDeclarationPrime();
     } 
@@ -111,8 +115,9 @@ void Parser::ConstantDeclarationPrime(){
 
 void Parser::ConstantDeclarationPart(){
     Consume(IDENTIFIER);
-    Consume(ASSIGN);
+    Consume(EQUAL);
     Consume(NUMBER);
+    Consume(SEMICOLON);
 }
 
 void Parser::StatementPart(){
@@ -147,8 +152,10 @@ void Parser::ProcedureDeclaration(){
 }
 
 void Parser::ParameterList(){
+    Consume(LEFTPAREN);
     Parameter();
     ParameterListPrime();
+    Consume(RIGHTPAREN);
 }
 
 void Parser::ParameterListPrime(){
@@ -182,8 +189,11 @@ void Parser::StatementSequence(){
 }
 
 void Parser::StatementSequencePrime(){
-    if(currentToken.type == SEMICOLON){
-        Consume(SEMICOLON);
+    if( currentToken.type == KW_IF ||
+        currentToken.type == KW_FOR ||
+        currentToken.type == KW_WHILE ||
+        currentToken.type == KW_BEGIN ||
+        currentToken.type == IDENTIFIER){
         Statement();
         StatementSequencePrime();
     }
@@ -213,6 +223,7 @@ void Parser::Statement(){
                 break;
             }
     }
+    Consume(SEMICOLON);
 }
 
 //Only here so I could add a switch or something later
@@ -429,6 +440,7 @@ void Parser::TermPrime(){
                 TermPrime();
                 break;
             }
+        default:break;
     }
 }
 
@@ -488,7 +500,7 @@ void Parser::Type(){
                 Consume(DOTDOT);
                 Expression();
                 Consume(RIGHTBRACKET);
-                Cosnume(KW_OF);
+                Consume(KW_OF);
                 Type();
                 break;
             }

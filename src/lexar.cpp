@@ -5,38 +5,48 @@
 
 using namespace std;
 
-const char *lexicalTokenNames[33] = {
-	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE",
+const char *lexicalTokenNames[44] = {
+	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE", "AND", "OR",
 	"EQUAL", "NOTEQUAL", "LESSTHAN", "GREATERTHAN", "LESSTHANEQ", "GREATERTHANEQ",
-	"LEFTPAREN", "RIGHTPAREN",
-	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "kwVAR", "kwCONST", 
-	"kwIF","kwTHEN","kwELSE", "kwBEGIN", "kwEND",  
-	"kwWHILE", "kwDO", "kwWRITE", "kwREAD",
-    "kwPROGRAM", "kwPROCEDURE",
+	"LEFTPAREN", "RIGHTPAREN", "LEFTBRACKET", "RIGHTBRACKET",
+	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "DOT DOT", "kwVAR", "kwCONST", 
+	"kwIF", "kwTHEN", "kwELSE", "kwBEGIN", "kwEND",  
+	"kwWHILE", "kwDO", "kwREAD", "kwWRITE",
+    "kwFOR", "kwTO", "kwDOWNTO",
+    "kwPROGRAM", "kwPROCEDURE", "kwARRAY", "kwINTEGER", "kwOF",
 	"EOI", "ERR"
 };
 const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"var", KW_VAR},
+	{"integer", KW_INTEGER},
+	{"array", KW_ARRAY},
+	{"program", KW_PROGRAM},
+	{"procedure", KW_PROCEDURE},
+	{"AND", AND},
+	{"OF", OR},
 	{"const", KW_CONST},
 	{"begin", KW_BEGIN},
 	{"end", KW_END},
+	{"downto", KW_DOWNTO},
+	{"to", KW_TO},
+	{"of", KW_OF},
 	{"if", KW_IF},
 	{"then", KW_THEN},
 	{"else", KW_ELSE},
 	{"while", KW_WHILE},
 	{"do", KW_DO},
-	{"write", KW_WRITE},
-	{"read", KW_READ},
 	{NULL, (LexicalTokenType) 0}
 };
 
 const struct {const char specialCharacter; LexicalTokenType token;} specialCharacterTable[]={
 	{';', SEMICOLON},
+	{':', COLON},
 	{',', COMMA},
 	{'+', PLUS},
 	{'-', MINUS},
 	{'*', TIMES},
 	{'/', DIVIDE},
+	{'=', EQUAL},
 	{'(', LEFTPAREN},
 	{')', RIGHTPAREN},
 	{0, (LexicalTokenType) 0}
@@ -209,6 +219,17 @@ LexicalToken Lexar::HandleSpecialChars(){
 	LexicalToken returnToken;
 	int i = 0;
 
+    if(currentInput.value == ':'){
+        currentInput = ReadInput();
+        if(currentInput.value == '='){
+            returnToken.type = ASSIGN;
+            currentInput = ReadInput();
+        }
+        else{
+            returnToken.type = COLON;
+        }
+        return returnToken;
+    }
 	//Handle simple 1 character special characters;
 	while(specialCharacterTable[i].specialCharacter){
 		if(currentInput.value == specialCharacterTable[i].specialCharacter){
@@ -245,18 +266,13 @@ LexicalToken Lexar::HandleSpecialChars(){
 
 		return returnToken;
 	}
-	if(currentInput.value == '='){
-		currentInput = ReadInput();
-		
-		if(currentInput.value == '='){
-			returnToken.type = EQUAL;
-			//Get currentInput ready for the next thing
-			currentInput = ReadInput();
-		}
-		else returnToken.type = ASSIGN;
-
-		return returnToken;
-	}
+    if(currentInput.value == '.'){
+        currentInput = ReadInput();
+        if(currentInput.value == '.'){
+            returnToken.type = DOTDOT;
+            return returnToken;
+        }
+    }
 	
 	returnToken.type = ERR;
 	returnToken.identifierName = "Unexpected token";

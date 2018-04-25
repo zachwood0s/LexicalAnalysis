@@ -2,7 +2,7 @@ CC := g++ # This is the main compiler
 # CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build
-TARGET := bin/runner
+TARGET := ./bin/runner
  
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
@@ -11,7 +11,9 @@ CFLAGS := -g # -Wall
 LIB := 
 INC := -I include
 
+
 $(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) $(INC) -o $@ $(OBJECTS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
