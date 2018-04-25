@@ -271,38 +271,85 @@ void Parser::ForStatement(){
 }
 
 void Parser::ForStatementPrime(){
+    switch(currentToken.type){
+        case KW_TO:
+            {
+                Consume(KW_TO);
+                Expression();
+                break;
+            }
+        case KW_DOWNTO:
+            {
+                Consume(KW_DOWNTO);
+                Expression();
+            }
+        default:
+            {
+                ConsumeError(KW_TO);
+                return;
+            }
+    }
+    Consume(KW_DO);
+    Statement();
 }
 
 void Parser::BlockStatment(){
-
+    Consume(KW_BEGIN);
+    StatementSequence();
+    Consume(KW_END);
 }
 
 void Parser::RegularStatement(){
-
+    Consume(IDENTIFIER);
+    RegularStatementPrime();
 }
 
 void Parser::RegularStatementPrime(){
-
+    switch(currentToken.type){
+        case ASSIGN:
+            {
+                AssignmentStatement();
+                break;
+            }
+        case LEFTPAREN:
+            {
+                ProcdureStatement();
+                break;
+            }
+        default:
+            {
+                ConsumeError(ASSIGN);
+                break;
+            }
+    }
 }
 
 void Parser::AssignmentStatement(){
-
+    Consume(ASSIGN);
+    Expression();
 }
 
 void Parser::ProcdureStatement(){
-
+    Consume(LEFTPAREN);
+    UsageParameterList();
+    Consume(RIGHTPAREN);
 }
 
 void Parser::UsageParameterList(){
-
+    UsageParameter();
+    UsageParameterListPrime();
 }
 
 void Parser::UsageParameterListPrime(){
-
+    if(currentToken.type == COMMA){
+        Consume(COMMA);
+        UsageParameter();
+        UsageParameterListPrime();
+    }
 }
 
 void Parser::UsageParameter(){
-
+    Expression();
 }
 
 
@@ -311,43 +358,114 @@ void Parser::UsageParameter(){
 /************************/
 
 void Parser::Expression(){
-
+    BaseExpression();
+    ExpressionPrime();
 }
 
 void Parser::ExpressionPrime(){
-
+    switch(currentToken.type){
+        case EQUAL: case LESSTHAN: case LESSTHANEQ:
+        case GREATERTHAN: case GREATERTHANEQ: case NOTEQUAL:
+            {
+                ComparisonOperator();
+                BaseExpression();
+                ExpressionPrime();
+                break;
+            }
+        default:break;
+    }
 }
 
 void Parser::ComparisonOperator(){
-
+    switch(currentToken.type){
+        case EQUAL: Consume(EQUAL); break;
+        case LESSTHAN: Consume(LESSTHAN); break;
+        case LESSTHANEQ: Consume(LESSTHANEQ); break;
+        case GREATERTHAN: Consume(GREATERTHAN); break;
+        case GREATERTHANEQ: Consume(GREATERTHANEQ); break;
+        case NOTEQUAL: Consume(NOTEQUAL); break;
+        default: ConsumeError(EQUAL); break;
+    }
 }
 
 void Parser::BaseExpression(){
-
+    Term();
+    BaseExpressionPrime();
 }
 
 void Parser::BaseExpressionPrime(){
-
+    switch(currentToken.type){
+        case PLUS: case MINUS: case OR:
+            {
+                PlusMinusOr(); 
+                Term();
+                BaseExpressionPrime();
+                break;
+            }
+        default:break;
+    }
 }
 
 void Parser::Term(){
-
+   Factor();
+   TermPrime();
 }
 
 void Parser::PlusMinusOr(){
-
+    switch(currentToken.type){
+        case PLUS: Consume(PLUS); break;
+        case MINUS: Consume(MINUS); break;
+        case OR: Consume(OR); break;
+        default:break;
+    }
 }
 
 void Parser::TermPrime(){
-
+    switch(currentToken.type){
+        case TIMES: case DIVIDE: case AND:
+            {
+                MultDivAnd();
+                Factor();
+                TermPrime();
+                break;
+            }
+    }
 }
 
 void Parser::MultDivAnd(){
-
+    switch(currentToken.type){
+        case TIMES: Consume(TIMES); break;
+        case DIVIDE: Consume(DIVIDE); break;
+        case AND: Consume(AND); break;
+        default:break;
+    }
 }
 
 void Parser::Factor(){
-
+    switch(currentToken.type){
+        case IDENTIFIER:
+            {
+                Consume(IDENTIFIER);
+                break;
+            }
+        case NUMBER:
+            {
+                Consume(NUMBER);
+                break;
+            }
+        case LEFTPAREN:
+            {
+                Consume(LEFTPAREN);
+                Expression();
+                Consume(RIGHTPAREN);
+                break;
+            }
+        default:
+            {
+                ConsumeError(IDENTIFIER);
+                break;
+            }
+    }
 }
 
 
@@ -356,7 +474,30 @@ void Parser::Factor(){
 /************************/
 
 void Parser::Type(){
-
+    switch(currentToken.type){
+        case KW_INTEGER:
+            {
+                Consume(KW_INTEGER);
+                break;
+            }
+        case KW_ARRAY:
+            {
+                Consume(KW_ARRAY);
+                Consume(LEFTBRACKET);
+                Expression();
+                Consume(DOTDOT);
+                Expression();
+                Consume(RIGHTBRACKET);
+                Cosnume(KW_OF);
+                Type();
+                break;
+            }
+        default:
+            {
+                ConsumeError(KW_INTEGER);
+                break;
+            }
+    }
 }
 
 
