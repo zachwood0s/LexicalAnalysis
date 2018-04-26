@@ -14,17 +14,17 @@ enum InputCharType {
 	LETTER, NUMB, END, WHITE_SPACE, NO_TYPE
 };
 enum LexicalTokenType{
-	IDENTIFIER, NUMBER, PLUS, MINUS, TIMES, DIVIDE, AND, OR,
+	IDENTIFIER, NUMBER, PLUS, MINUS, TIMES, DIVIDE, AND, OR, MOD, DIV,
 	EQUAL, NOTEQUAL, LESSTHAN, GREATERTHAN, LESSTHANEQ, GREATERTHANEQ,
 	LEFTPAREN, RIGHTPAREN, LEFTBRACKET, RIGHTBRACKET,
-	ASSIGN, COMMA, COLON, SEMICOLON, DOTDOT, KW_VAR, KW_CONST,
+	ASSIGN, COMMA, COLON, SEMICOLON, DOTDOT, DOT, KW_VAR, KW_CONST,
 	KW_IF, KW_THEN, KW_ELSE, KW_BEGIN, KW_END,
 	KW_WHILE, KW_DO, KW_READ, KW_WRITE, 
     KW_FOR, KW_TO, KW_DOWNTO, 
-    KW_PROGRAM, KW_PROCEDURE, KW_ARRAY, KW_INTEGER, KW_OF,
+    KW_PROGRAM, KW_PROCEDURE, KW_FUNCTION, KW_FORWARD, KW_ARRAY, KW_INTEGER, KW_OF, 
 	EOI, ERR
 };
-extern const char *lexicalTokenNames[44];
+extern const char *lexicalTokenNames[49];
 
 struct LexicalToken{
 	LexicalTokenType type;
@@ -46,7 +46,8 @@ class Lexar{
 	public:
 		Lexar();
 		~Lexar();
-		bool Init(char* fileName);
+        std::string fileName;
+		bool Init(const char* fileName);
         bool Init(std::string);
 		LexicalToken NextToken();
 		int lineNumber;

@@ -34,10 +34,17 @@ class Parser{
 
         //Procedures
         void ProcedureDeclaration();
+        void ProcedureDeclarationPrime();
+        void ProcedureHeader();
         void ParameterList();
         void ParameterListPrime();
         void Parameter();
-        void ReturnType();
+
+        //Functions
+        void FunctionDeclaration();
+        void FunctionDeclarationPrime();
+        void FunctionHeader();
+        void Directive();
 
         //Statements
         void StatementSequence();

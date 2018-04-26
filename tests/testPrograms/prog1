@@ -9,4 +9,4 @@ begin
     readln(n);
     n := (n - 1) * Multiplyer + 10;
     writeln(n);
-end
+end.

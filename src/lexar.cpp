@@ -1,19 +1,20 @@
 #include <stdio.h>
 #include <sstream>
 #include <string.h>
+#include <string>
 #include "lexar.h"
 
 using namespace std;
 
-const char *lexicalTokenNames[44] = {
-	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE", "AND", "OR",
+const char *lexicalTokenNames[49] = {
+	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE", "AND", "OR", "MOD", "DIV",
 	"EQUAL", "NOTEQUAL", "LESSTHAN", "GREATERTHAN", "LESSTHANEQ", "GREATERTHANEQ",
 	"LEFTPAREN", "RIGHTPAREN", "LEFTBRACKET", "RIGHTBRACKET",
-	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "DOT DOT", "kwVAR", "kwCONST", 
+	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "DOT DOT", "DOT", "kwVAR", "kwCONST", 
 	"kwIF", "kwTHEN", "kwELSE", "kwBEGIN", "kwEND",  
 	"kwWHILE", "kwDO", "kwREAD", "kwWRITE",
     "kwFOR", "kwTO", "kwDOWNTO",
-    "kwPROGRAM", "kwPROCEDURE", "kwARRAY", "kwINTEGER", "kwOF",
+    "kwPROGRAM", "kwPROCEDURE", "kwFUNCTION", "kwFORWARD", "kwARRAY", "kwINTEGER", "kwOF", 
 	"EOI", "ERR"
 };
 const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
@@ -22,6 +23,8 @@ const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"array", KW_ARRAY},
 	{"program", KW_PROGRAM},
 	{"procedure", KW_PROCEDURE},
+	{"function", KW_FUNCTION},
+	{"forward", KW_FORWARD},
 	{"AND", AND},
 	{"OF", OR},
 	{"const", KW_CONST},
@@ -35,6 +38,8 @@ const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"else", KW_ELSE},
 	{"while", KW_WHILE},
 	{"do", KW_DO},
+	{"mod", MOD},
+	{"div", DIV},
 	{NULL, (LexicalTokenType) 0}
 };
 
@@ -49,6 +54,8 @@ const struct {const char specialCharacter; LexicalTokenType token;} specialChara
 	{'=', EQUAL},
 	{'(', LEFTPAREN},
 	{')', RIGHTPAREN},
+	{'[', LEFTBRACKET},
+	{']', RIGHTBRACKET},
 	{0, (LexicalTokenType) 0}
 };
 
@@ -69,15 +76,17 @@ void Lexar::Error(string message){
 	printf("ERROR ln: %d, col: %d; %s\n", lineNumber,columnNumber, message.c_str());
 }
 
-bool Lexar::Init(char* fileName){
+bool Lexar::Init(const char* fileN){
+    int len = strlen(fileN);
+    this->fileName.assign(fileN, len);
 	lineNumber = 1;
-	if(!fileName){
+	if(!fileN){
 		inputElement.inputFile = &std::cin;
 	}
 	else{
-		inputElement.inputFile = new ifstream(fileName);
+		inputElement.inputFile = new ifstream(fileN);
 		if(!inputElement.inputFile){
-			printf("Error opening %s \n",fileName);
+			printf("Error opening %s \n",fileN);
 			return false;
 		}
 	}
@@ -270,8 +279,11 @@ LexicalToken Lexar::HandleSpecialChars(){
         currentInput = ReadInput();
         if(currentInput.value == '.'){
             returnToken.type = DOTDOT;
-            return returnToken;
         }
+        else{
+            returnToken.type = DOT;
+        }
+        return returnToken;
     }
 	
 	returnToken.type = ERR;

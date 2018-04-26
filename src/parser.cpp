@@ -8,7 +8,7 @@ Parser::Parser(Lexar* lexar){
 }
 
 void Parser::ConsumeError(LexicalTokenType type){
-    printf("ERROR at line: %d col: %d\n", lexar->lineNumber, lexar->columnNumber);
+    printf("ERROR at line: %d col: %d\n in file %s\n", lexar->lineNumber, lexar->columnNumber, lexar->fileName.c_str());
     printf("Expected type of '%s', got type of '%s'\n",
             lexicalTokenNames[type],
             lexicalTokenNames[currentToken.type]);
@@ -43,6 +43,7 @@ bool Parser::Parse(){
 void Parser::Program(){
     ProgramHeader();
     Block();
+    Consume(DOT);
 }
 
 void Parser::ProgramHeader(){
@@ -73,6 +74,12 @@ void Parser::DeclarationPart(){
         case KW_PROCEDURE:
             {
                 ProcedureDeclaration();
+                DeclarationPart();
+                break;
+            }
+        case KW_FUNCTION:
+            {
+                FunctionDeclaration();
                 DeclarationPart();
                 break;
             }
@@ -144,18 +151,36 @@ void Parser::IdentifierListPrime(){
 /************************/
 
 void Parser::ProcedureDeclaration(){
+    ProcedureHeader();
+    Consume(SEMICOLON);
+    ProcedureDeclarationPrime();
+}
+
+void Parser::ProcedureDeclarationPrime(){
+    if(currentToken.type == KW_FORWARD){
+        Directive();
+        Consume(SEMICOLON);
+    }
+    else{
+        Block();
+        Consume(SEMICOLON);
+    }
+}
+
+
+void Parser::ProcedureHeader(){
     Consume(KW_PROCEDURE);
     Consume(IDENTIFIER);
     ParameterList();
-    ReturnType();
-    Consume(SEMICOLON);
 }
 
 void Parser::ParameterList(){
-    Consume(LEFTPAREN);
-    Parameter();
-    ParameterListPrime();
-    Consume(RIGHTPAREN);
+    if(currentToken.type == LEFTPAREN){
+        Consume(LEFTPAREN);
+        Parameter();
+        ParameterListPrime();
+        Consume(RIGHTPAREN);
+    }
 }
 
 void Parser::ParameterListPrime(){
@@ -172,12 +197,40 @@ void Parser::Parameter(){
     Type();
 }
 
-void Parser::ReturnType(){
-    if(currentToken.type == COLON){
-        Consume(COLON);
-        Type();
+
+/************************/
+/*      Functions       */
+/************************/
+
+void Parser::FunctionDeclaration(){
+    FunctionHeader();
+    Consume(SEMICOLON);
+    FunctionDeclarationPrime();
+}
+
+void Parser::FunctionDeclarationPrime(){
+    if(currentToken.type == KW_FORWARD){
+        Directive();
+        Consume(SEMICOLON);
+    }
+    else{
+        Block();
+        Consume(SEMICOLON);
     }
 }
+
+void Parser::FunctionHeader(){
+    Consume(KW_FUNCTION);
+    Consume(IDENTIFIER);
+    ParameterList();
+    Consume(COLON);
+    Type();
+}
+
+void Parser::Directive(){
+    Consume(KW_FORWARD);
+}
+
 
 /************************/
 /*      Statements      */
@@ -189,6 +242,7 @@ void Parser::StatementSequence(){
 }
 
 void Parser::StatementSequencePrime(){
+    Consume(SEMICOLON);
     if( currentToken.type == KW_IF ||
         currentToken.type == KW_FOR ||
         currentToken.type == KW_WHILE ||
@@ -223,7 +277,6 @@ void Parser::Statement(){
                 break;
             }
     }
-    Consume(SEMICOLON);
 }
 
 //Only here so I could add a switch or something later
@@ -341,9 +394,11 @@ void Parser::AssignmentStatement(){
 }
 
 void Parser::ProcdureStatement(){
-    Consume(LEFTPAREN);
-    UsageParameterList();
-    Consume(RIGHTPAREN);
+    if(currentToken.type == LEFTPAREN){
+        Consume(LEFTPAREN);
+        UsageParameterList();
+        Consume(RIGHTPAREN);
+    }
 }
 
 void Parser::UsageParameterList(){
@@ -400,6 +455,9 @@ void Parser::ComparisonOperator(){
 }
 
 void Parser::BaseExpression(){
+    if(currentToken.type == MINUS){
+        Consume(MINUS);
+    }
     Term();
     BaseExpressionPrime();
 }
@@ -433,7 +491,7 @@ void Parser::PlusMinusOr(){
 
 void Parser::TermPrime(){
     switch(currentToken.type){
-        case TIMES: case DIVIDE: case AND:
+        case TIMES: case DIVIDE: case AND: case MOD: case DIV:
             {
                 MultDivAnd();
                 Factor();
@@ -449,6 +507,8 @@ void Parser::MultDivAnd(){
         case TIMES: Consume(TIMES); break;
         case DIVIDE: Consume(DIVIDE); break;
         case AND: Consume(AND); break;
+        case MOD: Consume(MOD); break;
+        case DIV: Consume(DIV); break;
         default:break;
     }
 }
@@ -458,6 +518,9 @@ void Parser::Factor(){
         case IDENTIFIER:
             {
                 Consume(IDENTIFIER);
+                if(currentToken.type == LEFTPAREN){
+                    ProcdureStatement();
+                }
                 break;
             }
         case NUMBER:

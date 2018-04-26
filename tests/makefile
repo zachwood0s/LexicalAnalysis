@@ -15,3 +15,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 
 run:
 	./tests
+
+clean:
+	rm tests.o tests

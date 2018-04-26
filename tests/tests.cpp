@@ -93,4 +93,16 @@ TEST_CASE("Parsing successful", "[parser]"){
         lexar->Init("./testPrograms/prog2");
         REQUIRE(parser.Parse());
     }
+    SECTION("Prog3"){
+        lexar->Init("./testPrograms/prog3");
+        REQUIRE(!parser.Parse());
+    }
+    SECTION("Prog4"){
+        lexar->Init("./testPrograms/prog4");
+        REQUIRE(parser.Parse());
+    }
+    SECTION("Prog5"){
+        lexar->Init("./testPrograms/prog5.pas");
+        REQUIRE(parser.Parse());
+    }
 }

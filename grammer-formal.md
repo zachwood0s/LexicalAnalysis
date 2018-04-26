@@ -12,6 +12,7 @@
 <Declaration-Part>          => <Variable-Declaration>                                           
 <Declaration-Part>          => <Constant-Declaration>                                           
 <Declaration-Part>          => <Procedure-Declaration>                                          
+<Declaration-Part>          => <Function-Declaration>                                          
 <Declaration-Part>          => $
 
 <Variable-Declaration>      => var <Variable-Declaration-Part><Variable-Declaration-Pr>
@@ -32,13 +33,24 @@
 
 ## Procedures
 
-<Procedure-Declaration>     => procedure identifier <Parameter-List><Return-Type>;
-<Parameter-List>            => <Parameter><Parameter-List-Pr>
+<Procedure-Declaration>     => <Procedure-Heading>;<Procedure-Declaration-Pr>
+<Procedure-Declaration-Pr>  => <Block>;
+<Procedure-Declaration-Pr>  => <Directive>;
+<Procedure-Heading>         => procedure identifier <Parameter-List>
+<Parameter-List>            => (<Parameter><Parameter-List-Pr>)
+<Parameter-List>            => $
 <Parameter-List-Pr>         => ,<Parameter><Parameter-List-Pr>
 <Parameter-List-Pr>         => $
 <Parameter>                 => identifier:<Type>
-<Return-Type>               => :<Type>
-<Return-Type>               => $
+
+## Functions
+
+<Function-Declaration>      => <Function-Heading>;<Function-Declaration-Pr>
+<Function-Declaration-Pr>   => <Block>;
+<Function-Declaration-Pr>   => <Directive>;
+<Function-Heading>          => function identifier <Parameter-List>:<Return-Type>
+<Return-Type>               => <Type>
+<Directive>;
 
 ## Statements
 
@@ -71,6 +83,7 @@
 <Regular-Statement-Pr>      => <Procedure-Statement>
 <Assignment-Statement>      => := <Expression>
 <Procedure-Statement>       => (<Usage-Parameter-List>)
+<Procedure-Statement>       => $
 <Usage-Parameter-List>      => <Usage-Parameter><Usage-Parameter-List-Pr>
 <Usage-Parameter-List-Pr>   => ,<Usage-Parameter><Usage-Parameter-List-Pr>
 <Usage-Parameter-List-Pr>   => $
@@ -108,6 +121,7 @@
 <Factor>                    => identifier
 <Factor>                    => number
 <Factor>                    => (<Expression>)
+<Factor>                    => identifier<Procedure-Statement>
 
 ## Others
 
