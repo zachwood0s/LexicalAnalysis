@@ -1,5 +1,5 @@
 CC := g++ # This is the main compiler
-CFLAGS := -g -Wall
+CFLAGS := -g -Wall -std=c++11
 
 SRCEXT := cpp
 SRCDIR := ../src
