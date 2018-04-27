@@ -37,6 +37,7 @@ const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"then", KW_THEN},
 	{"else", KW_ELSE},
 	{"while", KW_WHILE},
+	{"for", KW_FOR},
 	{"do", KW_DO},
 	{"mod", MOD},
 	{"div", DIV},
@@ -279,6 +280,7 @@ LexicalToken Lexar::HandleSpecialChars(){
         currentInput = ReadInput();
         if(currentInput.value == '.'){
             returnToken.type = DOTDOT;
+            currentInput = ReadInput();
         }
         else{
             returnToken.type = DOT;

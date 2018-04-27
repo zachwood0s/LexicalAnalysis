@@ -346,6 +346,7 @@ void Parser::ForStatementPrime(){
             {
                 Consume(KW_DOWNTO);
                 Expression();
+                break;
             }
         default:
             {
@@ -365,6 +366,11 @@ void Parser::BlockStatment(){
 
 void Parser::RegularStatement(){
     Consume(IDENTIFIER);
+    if(currentToken.type == LEFTBRACKET){
+        Consume(LEFTBRACKET);
+        Expression();
+        Consume(RIGHTBRACKET);
+    }
     RegularStatementPrime();
 }
 
@@ -521,6 +527,11 @@ void Parser::Factor(){
                 if(currentToken.type == LEFTPAREN){
                     ProcdureStatement();
                 }
+                else if(currentToken.type == LEFTBRACKET){
+                    Consume(LEFTBRACKET);
+                    Expression();
+                    Consume(RIGHTBRACKET);
+                }
                 break;
             }
         case NUMBER:
@@ -542,6 +553,8 @@ void Parser::Factor(){
             }
     }
 }
+
+
 
 
 /************************/
