@@ -50,21 +50,19 @@ class Parser{
 
         //Procedures
         std::unique_ptr<AST> ProcedureDeclaration();
-        std::unique_ptr<AST> ProcedureDeclarationPrime();
+        std::unique_ptr<AST> ProcedureDeclarationPrime(std::unique_ptr<AST>);
         std::unique_ptr<AST> ProcedureHeader();
-        std::unique_ptr<AST> ParameterList();
-        std::unique_ptr<AST> ParameterListPrime();
-        std::unique_ptr<AST> Parameter();
+        std::vector<TypeNamePair> ParameterList();
+        TypeNamePair Parameter();
 
         //Functions
         std::unique_ptr<AST> FunctionDeclaration();
-        std::unique_ptr<AST> FunctionDeclarationPrime();
+        std::unique_ptr<AST> FunctionDeclarationPrime(std::unique_ptr<AST>);
         std::unique_ptr<AST> FunctionHeader();
-        std::unique_ptr<AST> Directive();
+        void Directive();
 
         //Statements
         std::unique_ptr<AST> StatementSequence();
-        std::unique_ptr<AST> StatementSequencePrime();
         std::unique_ptr<AST> Statement();
         std::unique_ptr<AST> ConditionalStatement();
         std::unique_ptr<AST> IfStatment();
@@ -94,7 +92,7 @@ class Parser{
         std::unique_ptr<AST> Factor();
 
         //MISC
-        std::unique_ptr<AST> Type();
+        LexicalTokenType Type();
 };
 
 

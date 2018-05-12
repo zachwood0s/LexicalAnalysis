@@ -154,50 +154,56 @@ std::unique_ptr<AST> Parser::IdentifierListPrime(){
 /************************/
 
 std::unique_ptr<AST> Parser::ProcedureDeclaration(){
-    ProcedureHeader();
+    auto proto = ProcedureHeader();
     Consume(SEMICOLON);
-    ProcedureDeclarationPrime();
+    return ProcedureDeclarationPrime(std::move(proto));
 }
 
-std::unique_ptr<AST> Parser::ProcedureDeclarationPrime(){
+std::unique_ptr<AST> Parser::ProcedureDeclarationPrime(std::unique_ptr<AST> dValue){
     if(currentToken.type == KW_FORWARD){
         Directive();
         Consume(SEMICOLON);
+        return dValue;
     }
     else{
-        Block();
+        auto body = Block();
         Consume(SEMICOLON);
+        return llvm::make_unique<FunctionAST>(dValue, body);
     }
 }
 
 
 std::unique_ptr<AST> Parser::ProcedureHeader(){
     Consume(KW_PROCEDURE);
+    auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
-    ParameterList();
+    return llvm::make_unique<PrototypeAST>(identName, ParameterList(), EOI);
 }
 
-std::unique_ptr<AST> Parser::ParameterList(){
+std::vector<TypeNamePair> Parser::ParameterList(){
     if(currentToken.type == LEFTPAREN){
         Consume(LEFTPAREN);
-        Parameter();
-        ParameterListPrime();
+        std::vector<TypeNamePair> params;
+        params.push_back(Parameter());
+        while(1){
+            if(currentToken.type == COMMA){
+                Consume(COMMA);
+                params.push_back(Parameter());
+            }
+            else break;
+        }
         Consume(RIGHTPAREN);
+        return params;
     }
+    return {};
 }
 
-std::unique_ptr<AST> Parser::ParameterListPrime(){
-    if(currentToken.type == COMMA){
-        Consume(COMMA);
-        Parameter();
-        ParameterListPrime();
-    }
-}
 
-std::unique_ptr<AST> Parser::Parameter(){
+TypeNamePair Parser::Parameter(){
+    auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
     Consume(COLON);
-    Type();
+    return TypeNamePair{Type(), identName};
 }
 
 
@@ -206,31 +212,36 @@ std::unique_ptr<AST> Parser::Parameter(){
 /************************/
 
 std::unique_ptr<AST> Parser::FunctionDeclaration(){
-    FunctionHeader();
+    auto proto = FunctionHeader();
     Consume(SEMICOLON);
-    FunctionDeclarationPrime();
+    return FunctionDeclarationPrime(std::move(proto));
 }
 
-std::unique_ptr<AST> Parser::FunctionDeclarationPrime(){
+std::unique_ptr<AST> Parser::FunctionDeclarationPrime(std::unique_ptr<AST> dValue){
     if(currentToken.type == KW_FORWARD){
         Directive();
         Consume(SEMICOLON);
+        //Was only prototype, so we can just return the prototype
+        return dValue;
     }
     else{
-        Block();
+        auto body = Block();
         Consume(SEMICOLON);
+        return llvm::make_unique<FunctionAST>(dValue, body);
     }
 }
 
 std::unique_ptr<AST> Parser::FunctionHeader(){
     Consume(KW_FUNCTION);
+    auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
-    ParameterList();
+    auto params = ParameterList();
     Consume(COLON);
-    Type();
+    auto retType = Type();
+    return llvm::make_unique<PrototypeAST>(identName, params, retType);
 }
 
-std::unique_ptr<AST> Parser::Directive(){
+void Parser::Directive(){
     Consume(KW_FORWARD);
 }
 
@@ -240,21 +251,22 @@ std::unique_ptr<AST> Parser::Directive(){
 /************************/
 
 std::unique_ptr<AST> Parser::StatementSequence(){
-    Statement();
-    StatementSequencePrime();
+    std::vector<std::unique_ptr<AST>> statements;
+    statements.push_back(std::move(Statement()));
+    while(1){
+        Consume(SEMICOLON);
+        if( currentToken.type == KW_IF ||
+            currentToken.type == KW_FOR ||
+            currentToken.type == KW_WHILE ||
+            currentToken.type == KW_BEGIN ||
+            currentToken.type == IDENTIFIER){
+            statements.push_back(std::move(Statement()));
+        }
+        else break;
+    }
+    return llvm::make_unique<StatementSequenceAST>(statements);
 }
 
-std::unique_ptr<AST> Parser::StatementSequencePrime(){
-    Consume(SEMICOLON);
-    if( currentToken.type == KW_IF ||
-        currentToken.type == KW_FOR ||
-        currentToken.type == KW_WHILE ||
-        currentToken.type == KW_BEGIN ||
-        currentToken.type == IDENTIFIER){
-        Statement();
-        StatementSequencePrime();
-    }
-}
 
 std::unique_ptr<AST> Parser::Statement(){
     switch(currentToken.type){

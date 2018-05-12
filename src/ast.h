@@ -99,6 +99,14 @@ class ProgramAST: public AST{
             : programName(name), block(std::move(block)){}
 };
 
+class StatementSequenceAST: public AST{
+    private:
+        std::vector<std::unique_ptr<AST>> statements;
+    public:
+        StatementSequenceAST(std::vector<std::unique_ptr<AST>> statements)
+            : statements(std::move(statements)){};
+};
+
 class IfExpressionAST: public AST{
     private:
         std::unique_ptr<AST> cond, thenPart, elsePart;
@@ -132,5 +140,7 @@ class WhileExpressionAST: public AST{
                            std::unique_ptr<AST> body)
             :cond(std::move(cond)), body(std::move(body)){}
 };
+
+
 
 
