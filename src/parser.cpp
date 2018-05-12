@@ -260,23 +260,23 @@ std::unique_ptr<AST> Parser::Statement(){
     switch(currentToken.type){
         case KW_IF:
             {
-                ConditionalStatement();
+                return ConditionalStatement();
                 break;
             }
         case KW_FOR:
         case KW_WHILE:
             {
-                RepeditiveStatement();
+                return RepeditiveStatement();
                 break;
             }
         case KW_BEGIN:
             {
-                BlockStatment();
+                return BlockStatment();
                 break;
             }
         default:
             {
-                RegularStatement();
+                return RegularStatement();
                 break;
             }
     }
@@ -284,34 +284,34 @@ std::unique_ptr<AST> Parser::Statement(){
 
 //Only here so I could add a switch or something later
 std::unique_ptr<AST> Parser::ConditionalStatement(){
-    IfStatment();
+    return IfStatment();
 }
 
 std::unique_ptr<AST> Parser::IfStatment(){
     Consume(KW_IF);
-    Expression();
+    auto cond = Expression();
     Consume(KW_THEN);
-    Statement();
-    IfStatmentPrime();
+    return llvm::make_unique<IfExpressionAST>(cond, Statement(), IfStatmentPrime());
 }
 
 std::unique_ptr<AST> Parser::IfStatmentPrime(){
     if(currentToken.type == KW_ELSE){
         Consume(KW_ELSE);
-        Statement();
+        return Statement();
     }
+    return nullptr;
 }
 
 std::unique_ptr<AST> Parser::RepeditiveStatement(){
     switch(currentToken.type){
         case KW_FOR:
             {
-                ForStatement();
+                return ForStatement();
                 break;
             }
         case KW_WHILE:
             {
-                WhileStatement();
+                return WhileStatement();
                 break;
             }
         default:
@@ -320,35 +320,40 @@ std::unique_ptr<AST> Parser::RepeditiveStatement(){
                 break;
             }
     }
+    return nullptr;
 }
 
 std::unique_ptr<AST> Parser::WhileStatement(){
     Consume(KW_WHILE);
-    Expression();
+    auto cond = Expression();
     Consume(KW_DO);
-    Statement();
+    return llvm::make_unique<WhileExpressionAST>(cond, Statement());
 }
 
 std::unique_ptr<AST> Parser::ForStatement(){
     Consume(KW_FOR);
+    auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
     Consume(ASSIGN);
-    Expression();
-    ForStatementPrime();
+    return ForStatementPrime(identName, Expression());
 }
 
-std::unique_ptr<AST> Parser::ForStatementPrime(){
+std::unique_ptr<AST> Parser::ForStatementPrime(std::string identifierName, std::unique_ptr<AST> start){
+    LexicalTokenType direction = ERR;
+    std::unique_ptr<AST> end;
     switch(currentToken.type){
         case KW_TO:
             {
                 Consume(KW_TO);
-                Expression();
+                direction = KW_TO;
+                end = Expression();
                 break;
             }
         case KW_DOWNTO:
             {
                 Consume(KW_DOWNTO);
-                Expression();
+                direction = KW_DOWNTO;
+                end = Expression();
                 break;
             }
         default:
@@ -358,7 +363,8 @@ std::unique_ptr<AST> Parser::ForStatementPrime(){
             }
     }
     Consume(KW_DO);
-    Statement();
+    //TODO Step expression (if needed);
+    return llvm::make_unique<ForExpressionAST>(identName, direction, start, end, nullptr, Statement());
 }
 
 std::unique_ptr<AST> Parser::BlockStatment(){

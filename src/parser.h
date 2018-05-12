@@ -72,7 +72,7 @@ class Parser{
         std::unique_ptr<AST> RepeditiveStatement();
         std::unique_ptr<AST> WhileStatement();
         std::unique_ptr<AST> ForStatement();
-        std::unique_ptr<AST> ForStatementPrime();
+        std::unique_ptr<AST> ForStatementPrime(std::string, std::unique_ptr<AST>);
         std::unique_ptr<AST> BlockStatment();        
         std::unique_ptr<AST> RegularStatement();
         std::unique_ptr<AST> RegularStatementPrime(std::string);

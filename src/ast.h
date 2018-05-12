@@ -109,4 +109,28 @@ class IfExpressionAST: public AST{
             :cond(std::move(cond)), thenPart(std::move(thenPart)), elsePart(std::move(elsePart)) {}
 };
 
+class ForExpressionAST: public AST{
+    private:
+        std::string loopVarName;
+        LexicalTokenType direction; //IE: TO or DOWNTO
+        std::unique_ptr<AST> start, end, step, body;
+    public:
+        ForExpressionAST(std::string loopVarName,
+                         LexicalTokenType direction,
+                         std::unique_ptr<AST> start,
+                         std::unique_ptr<AST> end,
+                         std::unique_ptr<AST> step,
+                         std::unique_ptr<AST> body)
+            :loopVarName(std::move(loopVarName)), start(std::move(start)), end(std::move(end)),step(std::move(step)), body(std::move(body)){ this->direction = direction; }
+};
+
+class WhileExpressionAST: public AST{
+    private:
+        std::unique_ptr<AST> cond, body;
+    public:
+        WhileExpressionAST(std::unique_ptr<AST> cond,
+                           std::unique_ptr<AST> body)
+            :cond(std::move(cond)), body(std::move(body)){}
+};
+
 
