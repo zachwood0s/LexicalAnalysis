@@ -38,8 +38,47 @@ flags = [
     'c++',
     '-std=c++11',
     '-Wall',
+    '-ISUB /home/zach/llvm/llvm/include/',
 ]
 
+
+def Subdirectories(directory):
+  res = []
+  for path, subdirs, files in os.walk(directory):
+    for name in subdirs:
+      item = os.path.join(path, name)
+      res.append(item)
+  return res
+
+def IncludeFlagsOfSubdirectory( flags, working_directory ):
+  if not working_directory:
+    return list( flags )
+  new_flags = []
+  make_next_include_subdir = False
+  path_flags = [ '-ISUB']
+  for flag in flags:
+    # include the directory of flag as well
+    new_flag = [flag.replace('-ISUB', '-I')]
+
+    if make_next_include_subdir:
+      make_next_include_subdir = False
+      for subdir in Subdirectories(os.path.join(working_directory, flag)):
+        new_flag.append('-I')
+        new_flag.append(subdir)
+
+    for path_flag in path_flags:
+      if flag == path_flag:
+        make_next_include_subdir = True
+        break
+
+      if flag.startswith( path_flag ):
+        path = flag[ len( path_flag ): ]
+        for subdir in Subdirectories(os.path.join(working_directory, path)):
+            new_flag.append('-I' + subdir)
+        break
+
+    new_flags =new_flags + new_flag
+  return new_flags
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
 # compile_commands.json file to use that instead of 'flags'. See here for
@@ -67,6 +106,8 @@ def DirectoryOfThisScript():
 def MakeRelativePathsInFlagsAbsolute( flags, working_directory ):
   if not working_directory:
     return list( flags )
+
+  flags = IncludeFlagsOfSubdirectory(flags, working_directory)
   new_flags = []
   make_next_absolute = False
   path_flags = [ '-isystem', '-I', '-iquote', '--sysroot=' ]

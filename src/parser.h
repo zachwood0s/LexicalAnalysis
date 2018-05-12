@@ -1,8 +1,24 @@
 #ifndef PARSER_H
 #define PARSER_H
+#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Verifier.h"
 
+#include "ast.h"
 #include "lexar.h"
 
+static llvm::LLVMContext theContext;
+static llvm::IRBuilder<> builder(theContext);
+static std::unique_ptr<llvm::Module> theModule;
+static std::map<std::string, llvm::Value*> namedValues;
 
 class Parser{
     public:
@@ -18,68 +34,67 @@ class Parser{
         //Grammer Handlings
         
         // Main program
-        void Program();
-        void ProgramHeader();
-        void Block();
-        void DeclarationPart();
-        void VariableDeclaration();
-        void VariableDeclarationPrime();
-        void VariableDeclarationPart();
-        void ConstantDeclaration();
-        void ConstantDeclarationPrime();
-        void ConstantDeclarationPart();
-        void StatementPart();
-        void IdentifierList();
-        void IdentifierListPrime();
+        std::unique_ptr<AST> Program();
+        std::string ProgramHeader();
+        std::unique_ptr<AST> Block();
+        std::unique_ptr<AST> DeclarationPart();
+        std::unique_ptr<AST> VariableDeclaration();
+        std::unique_ptr<AST> VariableDeclarationPrime();
+        std::unique_ptr<AST> VariableDeclarationPart();
+        std::unique_ptr<AST> ConstantDeclaration();
+        std::unique_ptr<AST> ConstantDeclarationPrime();
+        std::unique_ptr<AST> ConstantDeclarationPart();
+        std::unique_ptr<AST> StatementPart();
+        std::unique_ptr<AST> IdentifierList();
+        std::unique_ptr<AST> IdentifierListPrime();
 
         //Procedures
-        void ProcedureDeclaration();
-        void ProcedureDeclarationPrime();
-        void ProcedureHeader();
-        void ParameterList();
-        void ParameterListPrime();
-        void Parameter();
+        std::unique_ptr<AST> ProcedureDeclaration();
+        std::unique_ptr<AST> ProcedureDeclarationPrime();
+        std::unique_ptr<AST> ProcedureHeader();
+        std::unique_ptr<AST> ParameterList();
+        std::unique_ptr<AST> ParameterListPrime();
+        std::unique_ptr<AST> Parameter();
 
         //Functions
-        void FunctionDeclaration();
-        void FunctionDeclarationPrime();
-        void FunctionHeader();
-        void Directive();
+        std::unique_ptr<AST> FunctionDeclaration();
+        std::unique_ptr<AST> FunctionDeclarationPrime();
+        std::unique_ptr<AST> FunctionHeader();
+        std::unique_ptr<AST> Directive();
 
         //Statements
-        void StatementSequence();
-        void StatementSequencePrime();
-        void Statement();
-        void ConditionalStatement();
-        void IfStatment();
-        void IfStatmentPrime();
-        void RepeditiveStatement();
-        void WhileStatement();
-        void ForStatement();
-        void ForStatementPrime();
-        void BlockStatment();        
-        void RegularStatement();
-        void RegularStatementPrime();
-        void AssignmentStatement();
-        void ProcdureStatement();
-        void UsageParameterList();
-        void UsageParameterListPrime();
-        void UsageParameter();
+        std::unique_ptr<AST> StatementSequence();
+        std::unique_ptr<AST> StatementSequencePrime();
+        std::unique_ptr<AST> Statement();
+        std::unique_ptr<AST> ConditionalStatement();
+        std::unique_ptr<AST> IfStatment();
+        std::unique_ptr<AST> IfStatmentPrime();
+        std::unique_ptr<AST> RepeditiveStatement();
+        std::unique_ptr<AST> WhileStatement();
+        std::unique_ptr<AST> ForStatement();
+        std::unique_ptr<AST> ForStatementPrime();
+        std::unique_ptr<AST> BlockStatment();        
+        std::unique_ptr<AST> RegularStatement();
+        std::unique_ptr<AST> RegularStatementPrime(std::string);
+        std::unique_ptr<AST> AssignmentStatement();
+        std::vector<std::unique_ptr<AST>> ProcdureStatement();
+        std::vector<std::unique_ptr<AST>> UsageParameterList();
+        std::unique_ptr<AST> UsageParameter();
 
         //Expressions
-        void Expression();
-        void ExpressionPrime();
-        void ComparisonOperator();
-        void BaseExpression();
-        void BaseExpressionPrime();
-        void PlusMinusOr();
-        void Term();
-        void TermPrime();
-        void MultDivAnd();
-        void Factor();
+        std::unique_ptr<AST> Expression();
+        std::unique_ptr<AST> ExpressionPrime();
+        LexicalTokenType ComparisonOperator();
+        std::unique_ptr<AST> BaseExpression();
+        std::unique_ptr<AST> BaseExpressionPrime(std::unique_ptr<AST>);
+        LexicalTokenType PlusMinusOr();
+        std::unique_ptr<AST> Term();
+        std::unique_ptr<AST> TermPrime(std::unique_ptr<AST>);
+        LexicalTokenType MultDivAnd();
+        std::unique_ptr<AST> Factor();
 
         //MISC
-        void Type();
+        std::unique_ptr<AST> Type();
 };
 
 

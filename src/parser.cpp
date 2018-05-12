@@ -40,24 +40,27 @@ bool Parser::Parse(){
 /*      Main Program    */
 /************************/
 
-void Parser::Program(){
+std::unique_ptr<AST> Parser::Program(){
     ProgramHeader();
-    Block();
+    auto mainBlock = Block();
     Consume(DOT);
+    return std::move(mainBlock);
 }
 
-void Parser::ProgramHeader(){
+std::string Parser::ProgramHeader(){
     Consume(KW_PROGRAM);
+    auto programName = currentToken.identifierName;
     Consume(IDENTIFIER);
     Consume(SEMICOLON);
+    return programName;
 }
 
-void Parser::Block(){
+std::unique_ptr<AST> Parser::Block(){
     DeclarationPart();
     StatementPart();
 }
 
-void Parser::DeclarationPart(){
+std::unique_ptr<AST> Parser::DeclarationPart(){
     switch(currentToken.type){
         case KW_VAR:
             {
@@ -87,58 +90,58 @@ void Parser::DeclarationPart(){
     }
 }
 
-void Parser::VariableDeclaration(){
+std::unique_ptr<AST> Parser::VariableDeclaration(){
     Consume(KW_VAR);
     VariableDeclarationPart();
     VariableDeclarationPrime();
 }
 
-void Parser::VariableDeclarationPrime(){
+std::unique_ptr<AST> Parser::VariableDeclarationPrime(){
     if(currentToken.type == IDENTIFIER){
         VariableDeclarationPart();
         VariableDeclarationPrime();
     }
 }
 
-void Parser::VariableDeclarationPart(){
+std::unique_ptr<AST> Parser::VariableDeclarationPart(){
     IdentifierList();
     Consume(COLON);
     Type();
     Consume(SEMICOLON);
 }
 
-void Parser::ConstantDeclaration(){
+std::unique_ptr<AST> Parser::ConstantDeclaration(){
     Consume(KW_CONST);
     ConstantDeclarationPart();
     ConstantDeclarationPrime();
 }
 
-void Parser::ConstantDeclarationPrime(){
+std::unique_ptr<AST> Parser::ConstantDeclarationPrime(){
     if(currentToken.type == IDENTIFIER){
         ConstantDeclarationPart();
         ConstantDeclarationPrime();
     } 
 }
 
-void Parser::ConstantDeclarationPart(){
+std::unique_ptr<AST> Parser::ConstantDeclarationPart(){
     Consume(IDENTIFIER);
     Consume(EQUAL);
     Consume(NUMBER);
     Consume(SEMICOLON);
 }
 
-void Parser::StatementPart(){
+std::unique_ptr<AST> Parser::StatementPart(){
     Consume(KW_BEGIN);
     StatementSequence();
     Consume(KW_END);
 }
 
-void Parser::IdentifierList(){
+std::unique_ptr<AST> Parser::IdentifierList(){
     Consume(IDENTIFIER);
     IdentifierListPrime();
 }
 
-void Parser::IdentifierListPrime(){
+std::unique_ptr<AST> Parser::IdentifierListPrime(){
     if(currentToken.type == COMMA){
         Consume(COMMA);
         Consume(IDENTIFIER);
@@ -150,13 +153,13 @@ void Parser::IdentifierListPrime(){
 /*      Procedures      */
 /************************/
 
-void Parser::ProcedureDeclaration(){
+std::unique_ptr<AST> Parser::ProcedureDeclaration(){
     ProcedureHeader();
     Consume(SEMICOLON);
     ProcedureDeclarationPrime();
 }
 
-void Parser::ProcedureDeclarationPrime(){
+std::unique_ptr<AST> Parser::ProcedureDeclarationPrime(){
     if(currentToken.type == KW_FORWARD){
         Directive();
         Consume(SEMICOLON);
@@ -168,13 +171,13 @@ void Parser::ProcedureDeclarationPrime(){
 }
 
 
-void Parser::ProcedureHeader(){
+std::unique_ptr<AST> Parser::ProcedureHeader(){
     Consume(KW_PROCEDURE);
     Consume(IDENTIFIER);
     ParameterList();
 }
 
-void Parser::ParameterList(){
+std::unique_ptr<AST> Parser::ParameterList(){
     if(currentToken.type == LEFTPAREN){
         Consume(LEFTPAREN);
         Parameter();
@@ -183,7 +186,7 @@ void Parser::ParameterList(){
     }
 }
 
-void Parser::ParameterListPrime(){
+std::unique_ptr<AST> Parser::ParameterListPrime(){
     if(currentToken.type == COMMA){
         Consume(COMMA);
         Parameter();
@@ -191,7 +194,7 @@ void Parser::ParameterListPrime(){
     }
 }
 
-void Parser::Parameter(){
+std::unique_ptr<AST> Parser::Parameter(){
     Consume(IDENTIFIER);
     Consume(COLON);
     Type();
@@ -202,13 +205,13 @@ void Parser::Parameter(){
 /*      Functions       */
 /************************/
 
-void Parser::FunctionDeclaration(){
+std::unique_ptr<AST> Parser::FunctionDeclaration(){
     FunctionHeader();
     Consume(SEMICOLON);
     FunctionDeclarationPrime();
 }
 
-void Parser::FunctionDeclarationPrime(){
+std::unique_ptr<AST> Parser::FunctionDeclarationPrime(){
     if(currentToken.type == KW_FORWARD){
         Directive();
         Consume(SEMICOLON);
@@ -219,7 +222,7 @@ void Parser::FunctionDeclarationPrime(){
     }
 }
 
-void Parser::FunctionHeader(){
+std::unique_ptr<AST> Parser::FunctionHeader(){
     Consume(KW_FUNCTION);
     Consume(IDENTIFIER);
     ParameterList();
@@ -227,7 +230,7 @@ void Parser::FunctionHeader(){
     Type();
 }
 
-void Parser::Directive(){
+std::unique_ptr<AST> Parser::Directive(){
     Consume(KW_FORWARD);
 }
 
@@ -236,12 +239,12 @@ void Parser::Directive(){
 /*      Statements      */
 /************************/
 
-void Parser::StatementSequence(){
+std::unique_ptr<AST> Parser::StatementSequence(){
     Statement();
     StatementSequencePrime();
 }
 
-void Parser::StatementSequencePrime(){
+std::unique_ptr<AST> Parser::StatementSequencePrime(){
     Consume(SEMICOLON);
     if( currentToken.type == KW_IF ||
         currentToken.type == KW_FOR ||
@@ -253,7 +256,7 @@ void Parser::StatementSequencePrime(){
     }
 }
 
-void Parser::Statement(){
+std::unique_ptr<AST> Parser::Statement(){
     switch(currentToken.type){
         case KW_IF:
             {
@@ -280,11 +283,11 @@ void Parser::Statement(){
 }
 
 //Only here so I could add a switch or something later
-void Parser::ConditionalStatement(){
+std::unique_ptr<AST> Parser::ConditionalStatement(){
     IfStatment();
 }
 
-void Parser::IfStatment(){
+std::unique_ptr<AST> Parser::IfStatment(){
     Consume(KW_IF);
     Expression();
     Consume(KW_THEN);
@@ -292,14 +295,14 @@ void Parser::IfStatment(){
     IfStatmentPrime();
 }
 
-void Parser::IfStatmentPrime(){
+std::unique_ptr<AST> Parser::IfStatmentPrime(){
     if(currentToken.type == KW_ELSE){
         Consume(KW_ELSE);
         Statement();
     }
 }
 
-void Parser::RepeditiveStatement(){
+std::unique_ptr<AST> Parser::RepeditiveStatement(){
     switch(currentToken.type){
         case KW_FOR:
             {
@@ -319,14 +322,14 @@ void Parser::RepeditiveStatement(){
     }
 }
 
-void Parser::WhileStatement(){
+std::unique_ptr<AST> Parser::WhileStatement(){
     Consume(KW_WHILE);
     Expression();
     Consume(KW_DO);
     Statement();
 }
 
-void Parser::ForStatement(){
+std::unique_ptr<AST> Parser::ForStatement(){
     Consume(KW_FOR);
     Consume(IDENTIFIER);
     Consume(ASSIGN);
@@ -334,7 +337,7 @@ void Parser::ForStatement(){
     ForStatementPrime();
 }
 
-void Parser::ForStatementPrime(){
+std::unique_ptr<AST> Parser::ForStatementPrime(){
     switch(currentToken.type){
         case KW_TO:
             {
@@ -358,32 +361,37 @@ void Parser::ForStatementPrime(){
     Statement();
 }
 
-void Parser::BlockStatment(){
+std::unique_ptr<AST> Parser::BlockStatment(){
     Consume(KW_BEGIN);
-    StatementSequence();
+    auto result = StatementSequence();
     Consume(KW_END);
+    return std::move(result);
 }
 
-void Parser::RegularStatement(){
+std::unique_ptr<AST> Parser::RegularStatement(){
+    auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
+    //array indexing
     if(currentToken.type == LEFTBRACKET){
         Consume(LEFTBRACKET);
         Expression();
         Consume(RIGHTBRACKET);
     }
-    RegularStatementPrime();
+    return RegularStatementPrime(identName);
 }
 
-void Parser::RegularStatementPrime(){
+std::unique_ptr<AST> Parser::RegularStatementPrime(std::string identifierName){
     switch(currentToken.type){
         case ASSIGN:
             {
-                AssignmentStatement();
+                //TODO
+                return AssignmentStatement();
                 break;
             }
         case LEFTPAREN:
             {
-                ProcdureStatement();
+                auto args = ProcdureStatement();
+                return llvm::make_unique<CallExpessionsAst>(identifierName, std::move(args));
                 break;
             }
         default:
@@ -392,36 +400,42 @@ void Parser::RegularStatementPrime(){
                 break;
             }
     }
+    return nullptr;
 }
 
-void Parser::AssignmentStatement(){
+std::unique_ptr<AST> Parser::AssignmentStatement(){
     Consume(ASSIGN);
     Expression();
 }
 
-void Parser::ProcdureStatement(){
+std::vector<std::unique_ptr<AST>> Parser::ProcdureStatement(){
     if(currentToken.type == LEFTPAREN){
         Consume(LEFTPAREN);
-        UsageParameterList();
+        auto result = UsageParameterList();
         Consume(RIGHTPAREN);
+        return result;
     }
+    return nullptr;
 }
 
-void Parser::UsageParameterList(){
-    UsageParameter();
-    UsageParameterListPrime();
-}
-
-void Parser::UsageParameterListPrime(){
-    if(currentToken.type == COMMA){
-        Consume(COMMA);
-        UsageParameter();
-        UsageParameterListPrime();
+std::vector<std::unique_ptr<AST>> Parser::UsageParameterList(){
+    std::vector<std::unique_ptr<AST>> args;
+    while(1){
+        auto arg = UsageParameter();
+        args.push_back(std::move(arg));
+        if(currentToken.type == COMMA){
+            Consume(COMMA);
+        }
+        else{
+            break;
+        }
     }
+    return std::move(args);
 }
 
-void Parser::UsageParameter(){
-    Expression();
+
+std::unique_ptr<AST> Parser::UsageParameter(){
+    return Expression();
 }
 
 
@@ -429,122 +443,127 @@ void Parser::UsageParameter(){
 /*      Expressions     */
 /************************/
 
-void Parser::Expression(){
-    BaseExpression();
-    ExpressionPrime();
+std::unique_ptr<AST> Parser::Expression(){
+    return ExpressionPrime(BaseExpression());
 }
 
-void Parser::ExpressionPrime(){
+std::unique_ptr<AST> Parser::ExpressionPrime(std::unique_ptr<AST> dValue){
     switch(currentToken.type){
         case EQUAL: case LESSTHAN: case LESSTHANEQ:
         case GREATERTHAN: case GREATERTHANEQ: case NOTEQUAL:
             {
-                ComparisonOperator();
-                BaseExpression();
-                ExpressionPrime();
+                auto op = ComparisonOperator();
+                ExpressionPrime(llvm::make_unique<BinaryOpAST>(op, dValue, BaseExpression()));
                 break;
             }
         default:break;
     }
 }
 
-void Parser::ComparisonOperator(){
+LexicalTokenType Parser::ComparisonOperator(){
     switch(currentToken.type){
-        case EQUAL: Consume(EQUAL); break;
-        case LESSTHAN: Consume(LESSTHAN); break;
-        case LESSTHANEQ: Consume(LESSTHANEQ); break;
-        case GREATERTHAN: Consume(GREATERTHAN); break;
-        case GREATERTHANEQ: Consume(GREATERTHANEQ); break;
-        case NOTEQUAL: Consume(NOTEQUAL); break;
-        default: ConsumeError(EQUAL); break;
+        case EQUAL: Consume(EQUAL); return EQUAL;
+        case LESSTHAN: Consume(LESSTHAN); return LESSTHAN;
+        case LESSTHANEQ: Consume(LESSTHANEQ); return LESSTHANEQ;
+        case GREATERTHAN: Consume(GREATERTHAN); return GREATERTHAN;
+        case GREATERTHANEQ: Consume(GREATERTHANEQ); return GREATERTHANEQ;
+        case NOTEQUAL: Consume(NOTEQUAL); return NOTEQUAL;
+        default: ConsumeError(EQUAL); return ERR;
     }
 }
 
-void Parser::BaseExpression(){
+std::unique_ptr<AST> Parser::BaseExpression(){
     if(currentToken.type == MINUS){
         Consume(MINUS);
     }
-    Term();
-    BaseExpressionPrime();
+    return BaseExpressionPrime(Term());
 }
 
-void Parser::BaseExpressionPrime(){
+std::unique_ptr<AST> Parser::BaseExpressionPrime(std::unique_ptr<AST> dValue){
     switch(currentToken.type){
         case PLUS: case MINUS: case OR:
             {
-                PlusMinusOr(); 
-                Term();
-                BaseExpressionPrime();
+                auto op = PlusMinusOr(); 
+                return BaseExpressionPrime(llvm::make_unique<BinaryOpAST>(op, dValue, Term()));
                 break;
             }
         default:break;
     }
+    return nullptr;
 }
 
-void Parser::Term(){
-   Factor();
-   TermPrime();
+std::unique_ptr<AST> Parser::Term(){
+   return TermPrime(Factor());
 }
 
-void Parser::PlusMinusOr(){
+std::unique_ptr<AST> Parser::PlusMinusOr(){
     switch(currentToken.type){
-        case PLUS: Consume(PLUS); break;
-        case MINUS: Consume(MINUS); break;
-        case OR: Consume(OR); break;
-        default:break;
+        case PLUS: Consume(PLUS); return PLUS;
+        case MINUS: Consume(MINUS); return MINUS;
+        case OR: Consume(OR); return OR;
+        default:return ERR;
     }
 }
 
-void Parser::TermPrime(){
+std::unique_ptr<AST> Parser::TermPrime(std::unique_ptr<AST> dValue){
     switch(currentToken.type){
         case TIMES: case DIVIDE: case AND: case MOD: case DIV:
             {
-                MultDivAnd();
-                Factor();
-                TermPrime();
+                auto op = MultDivAnd();
+                TermPrime(llvm::make_unique<BinaryOpAST>(op, dValue, Factor()));
                 break;
             }
-        default:break;
+        default: break;
     }
+    return nullptr;
 }
 
-void Parser::MultDivAnd(){
+LexicalTokenType Parser::MultDivAnd(){
     switch(currentToken.type){
-        case TIMES: Consume(TIMES); break;
-        case DIVIDE: Consume(DIVIDE); break;
-        case AND: Consume(AND); break;
-        case MOD: Consume(MOD); break;
-        case DIV: Consume(DIV); break;
-        default:break;
+        case TIMES: Consume(TIMES); return TIMES;
+        case DIVIDE: Consume(DIVIDE); return DIVIDE;
+        case AND: Consume(AND); return AND;
+        case MOD: Consume(MOD); return MOD;
+        case DIV: Consume(DIV); return DIV;
+        default:return ERR;
     }
 }
 
-void Parser::Factor(){
+std::unique_ptr<AST> Parser::Factor(){
     switch(currentToken.type){
         case IDENTIFIER:
             {
+                auto identName = currentToken.identifierName;
                 Consume(IDENTIFIER);
                 if(currentToken.type == LEFTPAREN){
-                    ProcdureStatement();
+                    auto args = ProcdureStatement();
+                    return llvm::make_unique<CallExpessionsAst>(identName, args);
                 }
+                //TODO
+                //Array index
                 else if(currentToken.type == LEFTBRACKET){
                     Consume(LEFTBRACKET);
                     Expression();
                     Consume(RIGHTBRACKET);
                 }
+                //simple variable reference
+                else{
+                    return llvm::make_unique<VariableIdentifierAST>(identName);
+                }
                 break;
             }
         case NUMBER:
             {
+                auto result = llvm::make_unique<NumberAST>(currentToken.storedNumber);
                 Consume(NUMBER);
-                break;
+                return std::move(result);
             }
         case LEFTPAREN:
             {
                 Consume(LEFTPAREN);
-                Expression();
+                auto result = Expression();
                 Consume(RIGHTPAREN);
-                break;
+                return result;
             }
         default:
             {
@@ -552,6 +571,7 @@ void Parser::Factor(){
                 break;
             }
     }
+    return nullptr;
 }
 
 
@@ -561,7 +581,8 @@ void Parser::Factor(){
 /*         MISC         */
 /************************/
 
-void Parser::Type(){
+//TODO 
+std::unique_ptr<AST> Parser::Type(){
     switch(currentToken.type){
         case KW_INTEGER:
             {
@@ -586,6 +607,7 @@ void Parser::Type(){
                 break;
             }
     }
+    return nullptr;
 }
 
 

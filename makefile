@@ -9,7 +9,46 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -g -Wall -std=c++11
 LIB := 
-INC := -I include
+
+LLVM_SRC_PATH := $$HOME/llvm/llvm
+LLVM_BUILD_PATH := $$HOME/llvm/build
+LLVM_BIN_PATH := $(LLVM_BUILD_PATH)/bin
+
+LLVM_CCXFLAGS := $(LLVM_BIN_PATH)/llvm-config --cxxflags
+LLVM_LDFLAGS := $(LLVM_BIN_PATH)/llvm-config --ldflags --libs --system-libs
+LLVM_LDFLAGS_NOLIBS := $(LLVM_BIN_PATH)/llvm-config --ldflags
+PLUGIN_LDFLAGS := -shared
+
+CLANG_INCLUDES := \
+	-I$(LLVM_SRC_PATH)/tools/clang/include \
+	-I$(LLVM_BUILD_PATH)/tools/clang/include
+
+INC := -I include $(LLVM_SRC_PATH)/include
+
+CLANG_LIBS := \
+	-Wl,--start-group \
+	-lclangAST \
+	-lclangASTMatchers \
+	-lclangAnalysis \
+	-lclangBasic \
+	-lclangDriver \
+	-lclangEdit \
+	-lclangFrontend \
+	-lclangFrontendTool \
+	-lclangLex \
+	-lclangParse \
+	-lclangSema \
+	-lclangEdit \
+	-lclangRewrite \
+	-lclangRewriteFrontend \
+	-lclangStaticAnalyzerFrontend \
+	-lclangStaticAnalyzerCheckers \
+	-lclangStaticAnalyzerCore \
+	-lclangSerialization \
+	-lclangToolingCore \
+	-lclangTooling \
+	-lclangFormat \
+	-Wl,--end-group
 
 
 $(TARGET): $(OBJECTS)
