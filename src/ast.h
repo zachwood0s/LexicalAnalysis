@@ -12,6 +12,11 @@ struct TypeNamePair{
     std::string name;
 };
 
+struct ValueNamePair{
+    int value;   
+    std::string name;
+};
+
 class AST{
     public:
         virtual ~AST(){};
@@ -30,7 +35,7 @@ class BinaryOpAST: public AST {
         LexicalTokenType op;
         std::unique_ptr<AST> LHS, RHS;
 
-    private:
+    public:
         BinaryOpAST(LexicalTokenType op,
                     std::unique_ptr<AST> LHS,
                     std::unique_ptr<AST> RHS): op(op), LHS(std::move(LHS)), RHS(std::move(RHS)){};
@@ -41,7 +46,7 @@ class ComparisonOpAST: public AST {
         LexicalTokenType op;
         std::unique_ptr<AST> LHS, RHS;
 
-    private:
+    public:
         ComparisonOpAST(LexicalTokenType op,
                     std::unique_ptr<AST> LHS,
                     std::unique_ptr<AST> RHS): op(op), LHS(std::move(LHS)), RHS(std::move(RHS)){};
@@ -53,6 +58,23 @@ class VariableIdentifierAST: public AST {
 
     public:
         VariableIdentifierAST(const std::string &name): name(name){}
+};
+
+class VariableDeclarationsAST: public AST {
+    private:
+        LexicalTokenType type;
+        std::vector<std::unique_ptr<VariableIdentifierAST>> identifiers;
+    public:
+        VariableDeclarationsAST(std::vector<std::unique_ptr<VariableIdentifierAST>> list,
+                                LexicalTokenType type)
+            : identifiers(std::move(list)){ this->type = type; };
+};
+
+class ConstantDeclarationsAST: public AST {
+    private:
+        std::vector<ValueNamePair> constants;
+    public:
+        ConstantDeclarationsAST(std::vector<ValueNamePair> constants): constants(constants){};
 };
 
 class CallExpessionsAst: public AST {
@@ -80,11 +102,11 @@ class PrototypeAST: public AST{
 
 class FunctionAST: public AST{
     private:
-        std::unique_ptr<PrototypeAST> prototype;
+        std::unique_ptr<AST> prototype;
         std::unique_ptr<AST> body;
     
     public:
-        FunctionAST(std::unique_ptr<PrototypeAST> prototype, std::unique_ptr<AST> body)
+        FunctionAST(std::unique_ptr<AST> prototype, std::unique_ptr<AST> body)
             : prototype(std::move(prototype)), body(std::move(body)){};
 };
 

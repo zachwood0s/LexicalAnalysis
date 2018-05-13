@@ -23,6 +23,7 @@ static std::map<std::string, llvm::Value*> namedValues;
 class Parser{
     public:
         Parser(Lexar*);
+        std::unique_ptr<AST> tree;
         bool Parse();
 
     private:
@@ -42,11 +43,9 @@ class Parser{
         std::unique_ptr<AST> VariableDeclarationPrime();
         std::unique_ptr<AST> VariableDeclarationPart();
         std::unique_ptr<AST> ConstantDeclaration();
-        std::unique_ptr<AST> ConstantDeclarationPrime();
-        std::unique_ptr<AST> ConstantDeclarationPart();
+        ValueNamePair ConstantDeclarationPart();
         std::unique_ptr<AST> StatementPart();
-        std::unique_ptr<AST> IdentifierList();
-        std::unique_ptr<AST> IdentifierListPrime();
+        std::vector<std::unique_ptr<VariableIdentifierAST>> IdentifierList();
 
         //Procedures
         std::unique_ptr<AST> ProcedureDeclaration();
@@ -81,7 +80,7 @@ class Parser{
 
         //Expressions
         std::unique_ptr<AST> Expression();
-        std::unique_ptr<AST> ExpressionPrime();
+        std::unique_ptr<AST> ExpressionPrime(std::unique_ptr<AST>);
         LexicalTokenType ComparisonOperator();
         std::unique_ptr<AST> BaseExpression();
         std::unique_ptr<AST> BaseExpressionPrime(std::unique_ptr<AST>);

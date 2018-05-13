@@ -23,7 +23,7 @@ CLANG_INCLUDES := \
 	-I$(LLVM_SRC_PATH)/tools/clang/include \
 	-I$(LLVM_BUILD_PATH)/tools/clang/include
 
-INC := -I include $(LLVM_SRC_PATH)/include
+INC := -I include 
 
 CLANG_LIBS := \
 	-Wl,--start-group \
