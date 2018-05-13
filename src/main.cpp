@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
     lexar.Init(fileName);
     Parser parser = Parser(&lexar);
     parser.Parse(); 
+    parser.tree->PrintNode(0);
 	printf("\n\nEnd.\n");
 	return 0;
 }

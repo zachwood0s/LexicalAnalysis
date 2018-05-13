@@ -39,12 +39,12 @@ class Parser{
         std::unique_ptr<AST> Program();
         std::string ProgramHeader();
         std::unique_ptr<AST> Block();
-        std::unique_ptr<AST> DeclarationPart(std::unique_ptr<AST>);
+        std::vector<std::unique_ptr<AST>> DeclarationPart();
         std::unique_ptr<AST> VariableDeclaration();
         std::unique_ptr<AST> VariableDeclarationPart();
         std::unique_ptr<AST> ConstantDeclaration();
         ValueNamePair ConstantDeclarationPart();
-        std::unique_ptr<AST> StatementPart();
+        std::unique_ptr<AST> StatementPart(std::vector<std::unique_ptr<AST>>);
         std::vector<std::unique_ptr<VariableIdentifierAST>> IdentifierList();
 
         //Procedures

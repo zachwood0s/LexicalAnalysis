@@ -56,41 +56,39 @@ std::string Parser::ProgramHeader(){
 }
 
 std::unique_ptr<AST> Parser::Block(){
-    return DeclarationPart(StatementPart());
+    return StatementPart(DeclarationPart());
 }
 
-std::unique_ptr<AST> Parser::DeclarationPart(std::unique_ptr<AST> dValue){
+std::vector<std::unique_ptr<AST>> Parser::DeclarationPart(){
     bool moreDeclarations = true;
-    std::vector<std::unique_ptr<AST>> variableDeclarations;
-    std::vector<std::unique_ptr<AST>> functionDeclarations;
-    std::vector<std::unique_ptr<AST>> constantDeclarations;
+    std::vector<std::unique_ptr<AST>> declarations;
 
     while(moreDeclarations){
         switch(currentToken.type){
             case KW_VAR:
                 {
-                    variableDeclarations.push_back(VariableDeclaration());
+                    declarations.push_back(VariableDeclaration());
                     break;
                 }
             case KW_CONST:
                 {
-                    constantDeclarations.push_back(ConstantDeclaration());
+                    declarations.push_back(ConstantDeclaration());
                     break;
                 }
             case KW_PROCEDURE:
                 {
-                    functionDeclarations.push_back(ProcedureDeclaration());
+                    declarations.push_back(ProcedureDeclaration());
                     break;
                 }
             case KW_FUNCTION:
                 {
-                    functionDeclarations.push_back(FunctionDeclaration());
+                    declarations.push_back(FunctionDeclaration());
                     break;
                 }
             default: moreDeclarations = false; break;
         }
     }
-    return llvm::make_unique<MainBlockAST>(std::move(constantDeclarations), std::move(functionDeclarations), std::move(variableDeclarations), std::move(dValue));
+    return declarations;
 }
 
 std::unique_ptr<AST> Parser::VariableDeclaration(){
@@ -132,11 +130,11 @@ ValueNamePair Parser::ConstantDeclarationPart(){
     return {value, identName};
 }
 
-std::unique_ptr<AST> Parser::StatementPart(){
+std::unique_ptr<AST> Parser::StatementPart(std::vector<std::unique_ptr<AST>> dValue){
     Consume(KW_BEGIN);
     auto result = StatementSequence();
     Consume(KW_END);
-    return result;
+    return llvm::make_unique<MainBlockAST>(std::move(dValue), std::move(result));
 }
 
 std::vector<std::unique_ptr<VariableIdentifierAST>> Parser::IdentifierList(){
@@ -487,7 +485,7 @@ std::unique_ptr<AST> Parser::ExpressionPrime(std::unique_ptr<AST> dValue){
             }
         default:break;
     }
-    return nullptr;
+    return dValue;
 }
 
 LexicalTokenType Parser::ComparisonOperator(){
@@ -520,7 +518,7 @@ std::unique_ptr<AST> Parser::BaseExpressionPrime(std::unique_ptr<AST> dValue){
             }
         default:break;
     }
-    return nullptr;
+    return dValue;
 }
 
 std::unique_ptr<AST> Parser::Term(){
@@ -541,12 +539,12 @@ std::unique_ptr<AST> Parser::TermPrime(std::unique_ptr<AST> dValue){
         case TIMES: case DIVIDE: case AND: case MOD: case DIV:
             {
                 auto op = MultDivAnd();
-                TermPrime(llvm::make_unique<BinaryOpAST>(op, std::move(dValue), Factor()));
+                return TermPrime(llvm::make_unique<BinaryOpAST>(op, std::move(dValue), Factor()));
                 break;
             }
         default: break;
     }
-    return nullptr;
+    return dValue;
 }
 
 LexicalTokenType Parser::MultDivAnd(){
@@ -576,6 +574,8 @@ std::unique_ptr<AST> Parser::Factor(){
                     Consume(LEFTBRACKET);
                     Expression();
                     Consume(RIGHTBRACKET);
+                    //TODO not actually doing anything with the arrays
+                    return llvm::make_unique<VariableIdentifierAST>(identName);
                 }
                 //simple variable reference
                 else{
