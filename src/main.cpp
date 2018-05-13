@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "lexar.h"
+#include "parser.h"
+#include "ast.h"
 
 void printSymb(LexicalToken token){
 	printf("<%s", lexicalTokenNames[token.type]);
@@ -18,8 +20,7 @@ void printSymb(LexicalToken token){
 
 	printf(">\n");
 }
-
-int main(int argc, char *argv[]){
+int main(int argc, char **argv){
 	char *fileName;
 	printf("Lexical Analysis");
 	if(argc == 1){
@@ -31,16 +32,11 @@ int main(int argc, char *argv[]){
 		printf("Input file %s.\n", fileName);
 	}
 	Lexar lexar = Lexar();
-	if(!lexar.Init(fileName)){
-		printf("Error creating lexical analyzer.\n");
-		return 0;
-	}
-	LexicalToken token;
-	do{
-		token = lexar.NextToken();
-		printSymb(token);
-	} while(token.type != EOI);
+    Parser parser = Parser(&lexar);
+    parser.Parse(); 
 	printf("\n\nEnd.\n");
+
+
 	return 0;
 }
 

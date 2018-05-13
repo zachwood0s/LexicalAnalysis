@@ -1,3 +1,6 @@
+#ifndef AST_H
+#define AST_H
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -17,7 +20,7 @@ struct ValueNamePair{
     std::string name;
 };
 
-class AST{
+class AST {
     public:
         virtual ~AST(){};
 };
@@ -100,7 +103,7 @@ class PrototypeAST: public AST{
         const std::string &GetName() const {return name;}
 };
 
-class FunctionAST: public AST{
+class FunctionAST: public AST {
     private:
         std::unique_ptr<AST> prototype;
         std::unique_ptr<AST> body;
@@ -163,6 +166,6 @@ class WhileExpressionAST: public AST{
             :cond(std::move(cond)), body(std::move(body)){}
 };
 
-
+#endif
 
 
