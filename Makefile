@@ -124,17 +124,17 @@ intrinsics_gen/fast:
 .PHONY : intrinsics_gen/fast
 
 #=============================================================================
-# Target rules for targets named simple-tool
+# Target rules for targets named compiler
 
 # Build rule for target.
-simple-tool: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 simple-tool
-.PHONY : simple-tool
+compiler: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 compiler
+.PHONY : compiler
 
 # fast build rule for target.
-simple-tool/fast:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/build
-.PHONY : simple-tool/fast
+compiler/fast:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/build
+.PHONY : compiler/fast
 
 src/lexar.o: src/lexar.cpp.o
 
@@ -142,7 +142,7 @@ src/lexar.o: src/lexar.cpp.o
 
 # target to build an object file
 src/lexar.cpp.o:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/lexar.cpp.o
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/lexar.cpp.o
 .PHONY : src/lexar.cpp.o
 
 src/lexar.i: src/lexar.cpp.i
@@ -151,7 +151,7 @@ src/lexar.i: src/lexar.cpp.i
 
 # target to preprocess a source file
 src/lexar.cpp.i:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/lexar.cpp.i
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/lexar.cpp.i
 .PHONY : src/lexar.cpp.i
 
 src/lexar.s: src/lexar.cpp.s
@@ -160,7 +160,7 @@ src/lexar.s: src/lexar.cpp.s
 
 # target to generate assembly for a file
 src/lexar.cpp.s:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/lexar.cpp.s
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/lexar.cpp.s
 .PHONY : src/lexar.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -169,7 +169,7 @@ src/main.o: src/main.cpp.o
 
 # target to build an object file
 src/main.cpp.o:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/main.cpp.o
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
 src/main.i: src/main.cpp.i
@@ -178,7 +178,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/main.cpp.i
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -187,7 +187,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/main.cpp.s
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 src/parser.o: src/parser.cpp.o
@@ -196,7 +196,7 @@ src/parser.o: src/parser.cpp.o
 
 # target to build an object file
 src/parser.cpp.o:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/parser.cpp.o
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/parser.cpp.o
 .PHONY : src/parser.cpp.o
 
 src/parser.i: src/parser.cpp.i
@@ -205,7 +205,7 @@ src/parser.i: src/parser.cpp.i
 
 # target to preprocess a source file
 src/parser.cpp.i:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/parser.cpp.i
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/parser.cpp.i
 .PHONY : src/parser.cpp.i
 
 src/parser.s: src/parser.cpp.s
@@ -214,8 +214,35 @@ src/parser.s: src/parser.cpp.s
 
 # target to generate assembly for a file
 src/parser.cpp.s:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/src/parser.cpp.s
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/parser.cpp.s
 .PHONY : src/parser.cpp.s
+
+src/print_ast.o: src/print_ast.cpp.o
+
+.PHONY : src/print_ast.o
+
+# target to build an object file
+src/print_ast.cpp.o:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/print_ast.cpp.o
+.PHONY : src/print_ast.cpp.o
+
+src/print_ast.i: src/print_ast.cpp.i
+
+.PHONY : src/print_ast.i
+
+# target to preprocess a source file
+src/print_ast.cpp.i:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/print_ast.cpp.i
+.PHONY : src/print_ast.cpp.i
+
+src/print_ast.s: src/print_ast.cpp.s
+
+.PHONY : src/print_ast.s
+
+# target to generate assembly for a file
+src/print_ast.cpp.s:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/print_ast.cpp.s
+.PHONY : src/print_ast.cpp.s
 
 # Help Target
 help:
@@ -226,7 +253,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... intrinsics_gen"
-	@echo "... simple-tool"
+	@echo "... compiler"
 	@echo "... src/lexar.o"
 	@echo "... src/lexar.i"
 	@echo "... src/lexar.s"
@@ -236,6 +263,9 @@ help:
 	@echo "... src/parser.o"
 	@echo "... src/parser.i"
 	@echo "... src/parser.s"
+	@echo "... src/print_ast.o"
+	@echo "... src/print_ast.i"
+	@echo "... src/print_ast.s"
 .PHONY : help
 
 

@@ -2,7 +2,6 @@
 #include "parser.h"
 #include "lexar.h"
 
-
 Parser::Parser(Lexar* lexar){
     this->lexar = lexar;
 }
@@ -143,15 +142,13 @@ std::vector<std::unique_ptr<VariableIdentifierAST>> Parser::IdentifierList(){
     Consume(IDENTIFIER);
     auto identAST = llvm::make_unique<VariableIdentifierAST>(identName);
     identifiers.push_back(std::move(identAST));
-    while(1){
-        if(currentToken.type == COMMA){
-            auto identName = currentToken.identifierName;
-            Consume(COMMA);
-            Consume(IDENTIFIER);
-            auto identAST = llvm::make_unique<VariableIdentifierAST>(identName);
-            identifiers.push_back(std::move(identAST));
-        }
-        else break;
+
+    while(currentToken.type == COMMA){
+        Consume(COMMA);
+        auto identName = currentToken.identifierName;
+        Consume(IDENTIFIER);
+        auto identAST = llvm::make_unique<VariableIdentifierAST>(identName);
+        identifiers.push_back(std::move(identAST));
     }
     return identifiers;
 }

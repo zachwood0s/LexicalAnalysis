@@ -16,10 +16,6 @@
 #include "ast.h"
 #include "lexar.h"
 
-static llvm::LLVMContext theContext;
-static llvm::IRBuilder<> builder(theContext);
-static std::unique_ptr<llvm::Module> theModule;
-static std::map<std::string, llvm::Value*> namedValues;
 
 class Parser{
     public:

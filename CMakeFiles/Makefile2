@@ -92,39 +92,39 @@ clean: CMakeFiles/intrinsics_gen.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/simple-tool.dir
+# Target rules for target CMakeFiles/compiler.dir
 
 # All Build rule for target.
-CMakeFiles/simple-tool.dir/all:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/depend
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles --progress-num=1,2,3,4 "Built target simple-tool"
-.PHONY : CMakeFiles/simple-tool.dir/all
+CMakeFiles/compiler.dir/all:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/depend
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles --progress-num=1,2,3,4,5 "Built target compiler"
+.PHONY : CMakeFiles/compiler.dir/all
 
 # Include target in all.
-all: CMakeFiles/simple-tool.dir/all
+all: CMakeFiles/compiler.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/simple-tool.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles 4
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/simple-tool.dir/all
+CMakeFiles/compiler.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles 5
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/compiler.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles 0
-.PHONY : CMakeFiles/simple-tool.dir/rule
+.PHONY : CMakeFiles/compiler.dir/rule
 
 # Convenience name for target.
-simple-tool: CMakeFiles/simple-tool.dir/rule
+compiler: CMakeFiles/compiler.dir/rule
 
-.PHONY : simple-tool
-
-# clean rule for target.
-CMakeFiles/simple-tool.dir/clean:
-	$(MAKE) -f CMakeFiles/simple-tool.dir/build.make CMakeFiles/simple-tool.dir/clean
-.PHONY : CMakeFiles/simple-tool.dir/clean
+.PHONY : compiler
 
 # clean rule for target.
-clean: CMakeFiles/simple-tool.dir/clean
+CMakeFiles/compiler.dir/clean:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/clean
+.PHONY : CMakeFiles/compiler.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/compiler.dir/clean
 
 .PHONY : clean
 

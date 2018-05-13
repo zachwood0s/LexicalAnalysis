@@ -1,4 +1,4 @@
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles/rebuild_cache.dir
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles/edit_cache.dir
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles/intrinsics_gen.dir
-/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles/simple-tool.dir
+/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/CMakeFiles/compiler.dir
