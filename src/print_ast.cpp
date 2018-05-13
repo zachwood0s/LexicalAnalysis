@@ -27,6 +27,11 @@ void VariableIdentifierAST::PrintNode(int depth){
     PRINTDPETH(depth, "Variable Identifier %s\n", name.c_str());
 }
 
+void UnaryOpAST::PrintNode(int depth){
+    PRINTDPETH(depth, "Unary Operator: %s\n", lexicalTokenNames[op]);
+    expression->PrintNode(depth+1);
+}
+
 void BinaryOpAST::PrintNode(int depth){
     PRINTDPETH(depth, "Operator: %s\n", lexicalTokenNames[op]);
     LHS->PrintNode(depth+1);

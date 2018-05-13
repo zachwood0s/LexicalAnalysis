@@ -42,8 +42,8 @@ class MainBlockAST: public AST {
             : declarations(std::move(declarations)), 
               statementSequence(std::move(statementSequence)) {};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class ProgramAST: public AST{
@@ -56,8 +56,8 @@ class ProgramAST: public AST{
                    std::unique_ptr<AST> block)
             : programName(name), block(std::move(block)){}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class StatementSequenceAST: public AST{
@@ -67,8 +67,8 @@ class StatementSequenceAST: public AST{
         StatementSequenceAST(std::vector<std::unique_ptr<AST>> statements)
             : statements(std::move(statements)){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 // Numbers and Identifiers
@@ -80,8 +80,8 @@ class NumberAST: public AST {
     public:
         NumberAST(int number): value(number){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class VariableIdentifierAST: public AST {
@@ -91,11 +91,26 @@ class VariableIdentifierAST: public AST {
     public:
         VariableIdentifierAST(const std::string &name): name(name){}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        std::string GetName(){return name;};
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 // Operators
+
+class UnaryOpAST: public AST {
+    private:
+        LexicalTokenType op;
+        std::unique_ptr<AST> expression;
+
+    public:
+        UnaryOpAST(LexicalTokenType op,
+                   std::unique_ptr<AST> expression )
+            : op(op), expression(std::move(expression)){};
+
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
+};
 
 class BinaryOpAST: public AST {
     private:
@@ -107,8 +122,8 @@ class BinaryOpAST: public AST {
                     std::unique_ptr<AST> LHS,
                     std::unique_ptr<AST> RHS): op(op), LHS(std::move(LHS)), RHS(std::move(RHS)){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class ComparisonOpAST: public AST {
@@ -121,8 +136,8 @@ class ComparisonOpAST: public AST {
                     std::unique_ptr<AST> LHS,
                     std::unique_ptr<AST> RHS): op(op), LHS(std::move(LHS)), RHS(std::move(RHS)){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 // Declarations
@@ -136,8 +151,8 @@ class VariableDeclarationsOfTypeAST: public AST {
                                 LexicalTokenType type)
             : identifiers(std::move(list)){ this->type = type; };
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class VariableDeclarationsAST: public AST {
@@ -146,8 +161,8 @@ class VariableDeclarationsAST: public AST {
     public:
         VariableDeclarationsAST(std::vector<std::unique_ptr<AST>> declarations):declarations(std::move(declarations)){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 
@@ -157,8 +172,8 @@ class ConstantDeclarationsAST: public AST {
     public:
         ConstantDeclarationsAST(std::vector<ValueNamePair> constants): constants(constants){};
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 // Expressions
@@ -172,8 +187,8 @@ class CallExpessionsAst: public AST {
                           std::vector<std::unique_ptr<AST>> Args)
             : Callee(callee), Args(std::move(Args)){}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class IfExpressionAST: public AST{
@@ -185,8 +200,8 @@ class IfExpressionAST: public AST{
                         std::unique_ptr<AST> elsePart)
             :cond(std::move(cond)), thenPart(std::move(thenPart)), elsePart(std::move(elsePart)) {}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class ForExpressionAST: public AST{
@@ -203,8 +218,8 @@ class ForExpressionAST: public AST{
                          std::unique_ptr<AST> body)
             :loopVarName(std::move(loopVarName)), start(std::move(start)), end(std::move(end)),step(std::move(step)), body(std::move(body)){ this->direction = direction; }
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class WhileExpressionAST: public AST{
@@ -215,8 +230,8 @@ class WhileExpressionAST: public AST{
                            std::unique_ptr<AST> body)
             :cond(std::move(cond)), body(std::move(body)){}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 // Functions, Prototypes, and Procedures
@@ -233,8 +248,8 @@ class PrototypeAST: public AST{
 
         const std::string &GetName() const {return name;}
 
-        virtual void PrintNode(int depth);
-        virtual llvm::Value* codegen();
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
 };
 
 class FunctionAST: public AST {
@@ -246,7 +261,7 @@ class FunctionAST: public AST {
         FunctionAST(std::unique_ptr<AST> prototype, std::unique_ptr<AST> body)
             : prototype(std::move(prototype)), body(std::move(body)){};
 
-        virtual void PrintNode(int depth);
+        void PrintNode(int depth) override;
         virtual llvm::Value* codegen();
 };
 

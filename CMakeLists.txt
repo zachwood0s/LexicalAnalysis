@@ -16,7 +16,7 @@ include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 # Now build our tools
-add_executable(compiler src/main.cpp src/parser.cpp src/lexar.cpp src/print_ast.cpp)
+add_executable(compiler src/main.cpp src/parser.cpp src/lexar.cpp src/print_ast.cpp src/codegen_ast.cpp)
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use

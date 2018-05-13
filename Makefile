@@ -136,6 +136,33 @@ compiler/fast:
 	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/build
 .PHONY : compiler/fast
 
+src/codegen_ast.o: src/codegen_ast.cpp.o
+
+.PHONY : src/codegen_ast.o
+
+# target to build an object file
+src/codegen_ast.cpp.o:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/codegen_ast.cpp.o
+.PHONY : src/codegen_ast.cpp.o
+
+src/codegen_ast.i: src/codegen_ast.cpp.i
+
+.PHONY : src/codegen_ast.i
+
+# target to preprocess a source file
+src/codegen_ast.cpp.i:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/codegen_ast.cpp.i
+.PHONY : src/codegen_ast.cpp.i
+
+src/codegen_ast.s: src/codegen_ast.cpp.s
+
+.PHONY : src/codegen_ast.s
+
+# target to generate assembly for a file
+src/codegen_ast.cpp.s:
+	$(MAKE) -f CMakeFiles/compiler.dir/build.make CMakeFiles/compiler.dir/src/codegen_ast.cpp.s
+.PHONY : src/codegen_ast.cpp.s
+
 src/lexar.o: src/lexar.cpp.o
 
 .PHONY : src/lexar.o
@@ -254,6 +281,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... intrinsics_gen"
 	@echo "... compiler"
+	@echo "... src/codegen_ast.o"
+	@echo "... src/codegen_ast.i"
+	@echo "... src/codegen_ast.s"
 	@echo "... src/lexar.o"
 	@echo "... src/lexar.i"
 	@echo "... src/lexar.s"

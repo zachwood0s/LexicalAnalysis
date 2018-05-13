@@ -3,6 +3,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/compiler.dir/src/parser.cpp.o"
   "CMakeFiles/compiler.dir/src/lexar.cpp.o"
   "CMakeFiles/compiler.dir/src/print_ast.cpp.o"
+  "CMakeFiles/compiler.dir/src/codegen_ast.cpp.o"
   "compiler.pdb"
   "compiler"
 )

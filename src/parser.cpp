@@ -500,6 +500,7 @@ LexicalTokenType Parser::ComparisonOperator(){
 std::unique_ptr<AST> Parser::BaseExpression(){
     if(currentToken.type == MINUS){
         Consume(MINUS);
+        return llvm::make_unique<UnaryOpAST>(MINUS, BaseExpressionPrime(Term()));
     }
     return BaseExpressionPrime(Term());
 }
