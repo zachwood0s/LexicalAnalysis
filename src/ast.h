@@ -63,15 +63,22 @@ class VariableIdentifierAST: public AST {
         VariableIdentifierAST(const std::string &name): name(name){}
 };
 
-class VariableDeclarationsAST: public AST {
+class VariableDeclarationsOfTypeAST: public AST {
     private:
         LexicalTokenType type;
         std::vector<std::unique_ptr<VariableIdentifierAST>> identifiers;
     public:
-        VariableDeclarationsAST(std::vector<std::unique_ptr<VariableIdentifierAST>> list,
+        VariableDeclarationsOfTypeAST(std::vector<std::unique_ptr<VariableIdentifierAST>> list,
                                 LexicalTokenType type)
             : identifiers(std::move(list)){ this->type = type; };
 };
+class VariableDeclarationsAST: public AST {
+    private:
+        std::vector<std::unique_ptr<AST>> declarations;
+    public:
+        VariableDeclarationsAST(std::vector<std::unique_ptr<AST>> declarations):declarations(std::move(declarations)){};
+};
+
 
 class ConstantDeclarationsAST: public AST {
     private:
@@ -88,6 +95,23 @@ class CallExpessionsAst: public AST {
         CallExpessionsAst(const std::string &callee,
                           std::vector<std::unique_ptr<AST>> Args)
             : Callee(callee), Args(std::move(Args)){}
+};
+
+class MainBlockAST: public AST {
+    private:
+        std::vector<std::unique_ptr<AST>> constantDeclarations;
+        std::vector<std::unique_ptr<AST>> functionDeclarations;
+        std::vector<std::unique_ptr<AST>> variableDeclarations;
+        std::unique_ptr<AST> statementSequence;
+    public:
+        MainBlockAST(std::vector<std::unique_ptr<AST>> constantDeclarations,
+                     std::vector<std::unique_ptr<AST>> functionDeclarations,
+                     std::vector<std::unique_ptr<AST>> variableDeclarations,
+                     std::unique_ptr<AST> statementSequence)
+            : constantDeclarations(std::move(constantDeclarations)), 
+              functionDeclarations(std::move(functionDeclarations)),
+              variableDeclarations(std::move(variableDeclarations)),
+              statementSequence(std::move(statementSequence)) {};
 };
 
 class PrototypeAST: public AST{

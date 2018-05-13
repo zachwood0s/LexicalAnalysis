@@ -56,51 +56,51 @@ std::string Parser::ProgramHeader(){
 }
 
 std::unique_ptr<AST> Parser::Block(){
-    DeclarationPart();
-    StatementPart();
+    return DeclarationPart(StatementPart());
 }
 
-std::unique_ptr<AST> Parser::DeclarationPart(){
-    switch(currentToken.type){
-        case KW_VAR:
-            {
-                VariableDeclaration();
-                DeclarationPart();
-                break;
-            }
-        case KW_CONST:
-            {
-                ConstantDeclaration();
-                DeclarationPart();
-                break;
-            }
-        case KW_PROCEDURE:
-            {
-                ProcedureDeclaration();
-                DeclarationPart();
-                break;
-            }
-        case KW_FUNCTION:
-            {
-                FunctionDeclaration();
-                DeclarationPart();
-                break;
-            }
-        default: break;
+std::unique_ptr<AST> Parser::DeclarationPart(std::unique_ptr<AST> dValue){
+    bool moreDeclarations = true;
+    std::vector<std::unique_ptr<AST>> variableDeclarations;
+    std::vector<std::unique_ptr<AST>> functionDeclarations;
+    std::vector<std::unique_ptr<AST>> constantDeclarations;
+
+    while(moreDeclarations){
+        switch(currentToken.type){
+            case KW_VAR:
+                {
+                    variableDeclarations.push_back(VariableDeclaration());
+                    break;
+                }
+            case KW_CONST:
+                {
+                    constantDeclarations.push_back(ConstantDeclaration());
+                    break;
+                }
+            case KW_PROCEDURE:
+                {
+                    functionDeclarations.push_back(ProcedureDeclaration());
+                    break;
+                }
+            case KW_FUNCTION:
+                {
+                    functionDeclarations.push_back(FunctionDeclaration());
+                    break;
+                }
+            default: moreDeclarations = false; break;
+        }
     }
+    return llvm::make_unique<MainBlockAST>(std::move(constantDeclarations), std::move(functionDeclarations), std::move(variableDeclarations), std::move(dValue));
 }
 
 std::unique_ptr<AST> Parser::VariableDeclaration(){
     Consume(KW_VAR);
-    VariableDeclarationPart();
-    VariableDeclarationPrime();
-}
-
-std::unique_ptr<AST> Parser::VariableDeclarationPrime(){
-    if(currentToken.type == IDENTIFIER){
-        VariableDeclarationPart();
-        VariableDeclarationPrime();
+    std::vector<std::unique_ptr<AST>> declarations;
+    do{
+        declarations.push_back(VariableDeclarationPart());
     }
+    while(currentToken.type == IDENTIFIER);
+    return llvm::make_unique<VariableDeclarationsAST>(std::move(declarations));
 }
 
 std::unique_ptr<AST> Parser::VariableDeclarationPart(){
@@ -108,7 +108,7 @@ std::unique_ptr<AST> Parser::VariableDeclarationPart(){
     Consume(COLON);
     auto type = Type();
     Consume(SEMICOLON);
-    return llvm::make_unique<VariableDeclarationsAST>(std::move(idents), type);
+    return llvm::make_unique<VariableDeclarationsOfTypeAST>(std::move(idents), type);
 }
 
 std::unique_ptr<AST> Parser::ConstantDeclaration(){

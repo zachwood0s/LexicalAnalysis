@@ -20,23 +20,20 @@ void printSymb(LexicalToken token){
 
 	printf(">\n");
 }
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
 	char *fileName;
-	printf("Lexical Analysis");
-	if(argc == 1){
-		printf("Keyboard input, write the source code. \n");
-		fileName = NULL;
-	}
-	else{
-		fileName = argv[1];
-		printf("Input file %s.\n", fileName);
-	}
+
+    if(argc != 3){
+        printf("Usage: simple-tool [src-path] [output-path]\n");
+        return 0;
+    }
+	fileName = argv[1];
+	printf("Input file %s.\n", fileName);
 	Lexar lexar = Lexar();
+    lexar.Init(fileName);
     Parser parser = Parser(&lexar);
     parser.Parse(); 
 	printf("\n\nEnd.\n");
-
-
 	return 0;
 }
 
