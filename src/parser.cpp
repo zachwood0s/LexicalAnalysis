@@ -41,9 +41,12 @@ bool Parser::Parse(){
 
 std::unique_ptr<AST> Parser::Program(){
     auto header = ProgramHeader();
-    auto mainBlock = Block();
+    auto declarations = DeclarationPart();
+    Consume(KW_BEGIN);
+    auto statements = StatementSequence();
+    Consume(KW_END);
     Consume(DOT);
-    return llvm::make_unique<ProgramAST>(header, std::move(mainBlock));
+    return llvm::make_unique<ProgramAST>(header, std::move(declarations), std::move(statements));
 }
 
 std::string Parser::ProgramHeader(){
@@ -115,7 +118,7 @@ std::unique_ptr<AST> Parser::ConstantDeclaration(){
        constants.push_back(ConstantDeclarationPart()); 
     }
     while(currentToken.type == IDENTIFIER);
-    return llvm::make_unique<ConstantDeclarationsAST>(constants);
+    return llvm::make_unique<ConstantDeclarationsAST>(std::move(constants));
 }
 
 
@@ -408,7 +411,8 @@ std::unique_ptr<AST> Parser::RegularStatementPrime(std::string identifierName){
         case ASSIGN:
             {
                 //TODO
-                return AssignmentStatement();
+                auto var = llvm::make_unique<VariableIdentifierAST>(identifierName);
+                return llvm::make_unique<BinaryOpAST>(ASSIGN, std::move(var), AssignmentStatement());
                 break;
             }
         case LEFTPAREN:
@@ -476,7 +480,7 @@ std::unique_ptr<AST> Parser::ExpressionPrime(std::unique_ptr<AST> dValue){
         case GREATERTHAN: case GREATERTHANEQ: case NOTEQUAL:
             {
                 auto op = ComparisonOperator();
-                auto res = llvm::make_unique<BinaryOpAST>(op, std::move(dValue), BaseExpression());
+                auto res = llvm::make_unique<ComparisonOpAST>(op, std::move(dValue), BaseExpression());
                 return ExpressionPrime(std::move(res));
                 break;
             }

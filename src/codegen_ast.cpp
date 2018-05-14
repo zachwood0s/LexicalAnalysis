@@ -1,6 +1,7 @@
 #include "ast.h"
 
 #include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -24,7 +25,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction,
         const std::string &VarName){
     IRBuilder<> TmpB(&theFunction->getEntryBlock(),
             theFunction->getEntryBlock().begin());
-    return TmpB.CreateAlloca(Type::getDoubleTy(theContext), 0, VarName.c_str());
+    return TmpB.CreateAlloca(Type::getInt64Ty(theContext), 0, VarName.c_str());
 }
 
 Value* LogErrorV(const char *str){
@@ -35,19 +36,73 @@ Value* LogErrorV(const char *str){
 
 Value* MainBlockAST::codegen(){
     //Remember I want to call the DoAllocations on the declarations not code gen. will need to cast
+    std::vector<AllocaInst *> OldBindings;
+    for(int i = 0; i<declarations.size(); i++){
+        auto decl = dynamic_cast<DeclarationAST*>(declarations[i].get());
+        if(!decl){
+            printf("DeclarationAST cast failed");
+            return nullptr;
+        }
+        if(PrototypeAST *proto = dynamic_cast<PrototypeAST*>(decl)){
+            proto->codegen();
+        }
+        else{
+            auto oldBind = decl->DoAllocations();
+            OldBindings.insert(OldBindings.end(), oldBind.begin(), oldBind.end());
+        }
+    }
+   
+    Value* BodyVal = statementSequence->codegen();
+    if(!BodyVal)
+        return nullptr;
+
+    for(int i = 0; i<OldBindings.size();i++){
+        //This won't work cuz it allows for vars to be accessed from an already deleted scope
+        if(OldBindings[i])
+            namedValues[OldBindings[i]->getName()] = OldBindings[i];
+    }
+
+    return BodyVal;
 }
 
 Value* ProgramAST::codegen(){
-   theModule = llvm::make_unique<Module>(programName, theContext);
-   return block->codegen();
+    theModule = llvm::make_unique<Module>(programName, theContext);
+
+    FunctionType *FT = FunctionType::get(Type::getVoidTy(theContext), false);
+    Function *F = Function::Create(FT, Function::ExternalLinkage, "__mainprogram__", theModule.get());
+    BasicBlock *BB = BasicBlock::Create(theContext, "entry", F);
+    builder.SetInsertPoint(BB);
+
+    for(int i = 0; i<declarations.size(); i++){
+        auto decl = dynamic_cast<DeclarationAST*>(declarations[i].get());
+        if(!decl){
+            printf("DeclarationAST cast failed");
+            return nullptr;
+        }
+        if(PrototypeAST *proto = dynamic_cast<PrototypeAST*>(decl)){
+            proto->codegen();
+        }
+        else{
+            auto oldBind = decl->DoAllocations();
+        }
+    }
+    builder.SetInsertPoint(BB);
+    Value* BodyVal = statementSequence->codegen();
+    if(!BodyVal)
+        return nullptr;
+    theModule->print(errs(), nullptr);
+    return BodyVal;
 }
 
 Value* StatementSequenceAST::codegen(){
-
+    for(int i = 0; i<statements.size()-1; i++){
+        statements[i]->codegen();
+    }
+    return statements[statements.size()-1]->codegen();
 }
 
 Value* NumberAST::codegen(){
-    return ConstantInt::get(theContext, APSInt(value));
+    return ConstantInt::get(theContext, APSInt(64, value));
 }
 
 Value* VariableIdentifierAST::codegen(){
@@ -59,7 +114,7 @@ Value* VariableIdentifierAST::codegen(){
 }
 
 Value* UnaryOpAST::codegen(){
-
+    return expression->codegen();
 }
 
 Value* BinaryOpAST::codegen(){
@@ -80,18 +135,36 @@ Value* BinaryOpAST::codegen(){
                     return LogErrorV("left hand side of assignment must be a varaible");
 
                 Value *Variable = namedValues[LHSE->GetName()];
-                if(!Variable)
-                    return LogErrorV("Unknown variable name");
+                if(!Variable){
+                    printf("Unknown variable name %s\n", LHSE->GetName().c_str()); 
+                    return nullptr;
+                }
+
 
                 builder.CreateStore(R, Variable);
                 return R;
             }
-        default: return LogErrorV("Invalid operator");
+        default:{printf("Invalid operator %s\n", lexicalTokenNames[op]); return nullptr; } 
     }
 }
 
 Value* ComparisonOpAST::codegen(){
+    Value* L = LHS->codegen();
+    Value* R = RHS->codegen();
+    if(!L || !R)
+        return nullptr;
 
+    switch(op){    
+            //L = Builder.CreateFCmpULT(L, R, "cmptmp");
+            //return Builder.CreateUIToFP(L, Type::getDoubleTy(TheContext), "booltmp");
+        case LESSTHAN: return builder.CreateICmpULT(L, R, "cmptmp");
+        case LESSTHANEQ: return builder.CreateICmpULE(L, R, "cmptmp");
+        case GREATERTHAN: return builder.CreateICmpUGT(L, R, "cmptmp");
+        case GREATERTHANEQ: return builder.CreateICmpUGE(L, R, "cmptmp");
+        case NOTEQUAL: return builder.CreateICmpNE(L, R, "cmptmp");
+        case EQUAL: return builder.CreateICmpEQ(L, R, "cmptmp");
+        default:{printf("Invalid comparison operator %s\n", lexicalTokenNames[op]); return nullptr; } 
+    }
 }
 
 std::vector<AllocaInst*> VariableDeclarationsOfTypeAST::DoAllocations(){
@@ -101,7 +174,7 @@ std::vector<AllocaInst*> VariableDeclarationsOfTypeAST::DoAllocations(){
 
     for(int i = 0; i<this->identifiers.size(); i++){
         const std::string &VarName = identifiers[i]->GetName();
-        Value *InitVal = ConstantFP::get(theContext, APFloat(0.0));
+        Value *InitVal = ConstantInt::get(theContext, APSInt(64, 0));
 
         AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, VarName);
         builder.CreateStore(InitVal, Alloca);
@@ -136,13 +209,15 @@ std::vector<AllocaInst *> VariableDeclarationsAST::DoAllocations(){
 }
 
 std::vector<AllocaInst *> ConstantDeclarationsAST::DoAllocations(){
-
+    return {};
 }
 
 Value* CallExpessionsAst::codegen(){
     Function* CalleeF = theModule->getFunction(Callee);
-    if(!CalleeF)
-        return LogErrorV("Unknown function referenced");
+    if(!CalleeF){
+        printf("Unknown function referenced: %s\n", Callee.c_str());
+        return nullptr;
+    }
 
     if(CalleeF->arg_size() != Args.size())
         return LogErrorV("Incorrect # arguments passed");
@@ -161,7 +236,7 @@ Value* IfExpressionAST::codegen(){
     if(!CondV)
         return nullptr;
 
-    CondV = builder.CreateFCmpONE(CondV, ConstantFP::get(theContext, APFloat(0.0)), "ifcond");
+    CondV = builder.CreateICmpNE(CondV, ConstantInt::get(theContext, APInt(1, 0)), "ifcond");
     Function *theFunction = builder.GetInsertBlock()->getParent();
     BasicBlock *thenBB = BasicBlock::Create(theContext, "then", theFunction);
     BasicBlock *elseBB = BasicBlock::Create(theContext, "else");
@@ -180,7 +255,12 @@ Value* IfExpressionAST::codegen(){
     theFunction->getBasicBlockList().push_back(elseBB);
     builder.SetInsertPoint(elseBB);
 
-    Value *ElseV = elsePart->codegen();
+    Value *ElseV;
+    if(elsePart)
+        ElseV = elsePart->codegen();
+    else
+        ElseV = Constant::getNullValue(Type::getInt64Ty(theContext));
+
     if(!ElseV)
         return nullptr;
 
@@ -189,7 +269,7 @@ Value* IfExpressionAST::codegen(){
     
     theFunction->getBasicBlockList().push_back(mergeBB);
     builder.SetInsertPoint(mergeBB);
-    PHINode *PN = builder.CreatePHI(Type::getDoubleTy(theContext), 2, "iftmp");
+    PHINode *PN = builder.CreatePHI(Type::getInt64Ty(theContext), 2, "iftmp");
 
     PN->addIncoming(ThenV, thenBB);
     PN->addIncoming(ElseV, elseBB);
@@ -227,7 +307,7 @@ Value* ForExpressionAST::codegen(){
             return nullptr;
     }
     else{
-        StepVal = ConstantFP::get(theContext, APFloat(1.0));
+        StepVal = ConstantInt::get(theContext, APSInt(64, 1));
     }
     Value *CurVar = builder.CreateLoad(Alloca, loopVarName.c_str());
     Value *NextVar = builder.CreateFAdd(CurVar, StepVal, "nextvar");
@@ -237,7 +317,7 @@ Value* ForExpressionAST::codegen(){
     if(!EndCond)
         return nullptr;
 
-    EndCond = builder.CreateFCmpONE(EndCond, ConstantFP::get(theContext, APFloat(0.0)), "loopcond");
+    EndCond = builder.CreateFCmpONE(EndCond, ConstantInt::get(theContext, APSInt(64, 0)), "loopcond");
 
     BasicBlock *AfterBB = BasicBlock::Create(theContext, "afterloop", TheFunction);
     builder.CreateCondBr(EndCond, LoopBB, AfterBB);
@@ -248,17 +328,17 @@ Value* ForExpressionAST::codegen(){
     else
         namedValues.erase(loopVarName);
 
-    return Constant::getNullValue(Type::getDoubleTy(theContext));
+    return Constant::getNullValue(Type::getInt64Ty(theContext));
 }
 
 Value* WhileExpressionAST::codegen(){
-
+    return nullptr;
 }
 
 Value* PrototypeAST::codegen(){
     std::vector<Type*> Ints(Args.size(), Type::getInt64Ty(theContext));
 
-    FunctionType *FT = FunctionType::get(Type::getDoubleTy(theContext), Ints, false);
+    FunctionType *FT = FunctionType::get(Type::getInt64Ty(theContext), Ints, false);
 
     Function *F = Function::Create(FT, Function::ExternalLinkage, name, theModule.get());
 
@@ -270,7 +350,7 @@ Value* PrototypeAST::codegen(){
     return F;
 }
 
-Value* FunctionAST::codegen(){
+std::vector<AllocaInst*> FunctionAST::DoAllocations(){
     PrototypeAST *proto = dynamic_cast<PrototypeAST*>(prototype.get());
     Function *theFunction = theModule->getFunction((proto->GetName()));
 
@@ -278,28 +358,33 @@ Value* FunctionAST::codegen(){
         theFunction = static_cast<Function*>(proto->codegen());
 
     if(!theFunction)
-        return nullptr;
+        return {};
 
-    if(!theFunction->empty())
-        return LogErrorV("Function cannot be redefined");
+    if(!theFunction->empty()){
+        printf("Function %s cannot be redefined\n", proto->GetName().c_str());
+        return {};
+    }
 
     BasicBlock *BB = BasicBlock::Create(theContext, "entry", theFunction);
     builder.SetInsertPoint(BB);
 
-    namedValues.clear();
+    std::vector<AllocaInst *> OldBindings;
+    //namedValues.clear();
     for(auto &Arg : theFunction->args()){
         AllocaInst *Alloca = CreateEntryBlockAlloca(theFunction, Arg.getName());
 
         builder.CreateStore(&Arg, Alloca);
 
+        OldBindings.push_back(namedValues[Arg.getName()]);
         namedValues[Arg.getName()] = Alloca;
     }
 
     if(Value *RetVal = body->codegen()){
+        //builder.CreateRetVoid();
         builder.CreateRet(RetVal);
         verifyFunction(*theFunction);
-        return theFunction;
+        return OldBindings;
     }
     theFunction->eraseFromParent();
-    return nullptr;
+    return {};
 }

@@ -50,12 +50,16 @@ class MainBlockAST: public AST {
 class ProgramAST: public AST{
     private:
         std::string programName;
-        std::unique_ptr<AST> block;
+        std::vector<std::unique_ptr<AST>> declarations;
+        std::unique_ptr<AST> statementSequence;
 
     public:
         ProgramAST(const std::string &name,
-                   std::unique_ptr<AST> block)
-            : programName(name), block(std::move(block)){}
+                   std::vector<std::unique_ptr<AST>> declarations,
+                     std::unique_ptr<AST> statementSequence)
+            : programName(name), 
+              declarations(std::move(declarations)), 
+              statementSequence(std::move(statementSequence)){};
 
         void PrintNode(int depth) override;
         llvm::Value* codegen() override;
@@ -145,7 +149,7 @@ class ComparisonOpAST: public AST {
 
 class DeclarationAST : public AST{
     public:
-        virtual std::vector<llvm::AllocaInst*> DoAllocations();
+        virtual std::vector<llvm::AllocaInst*> DoAllocations() = 0;
 };
 
 class VariableDeclarationsOfTypeAST: public DeclarationAST {
@@ -158,6 +162,7 @@ class VariableDeclarationsOfTypeAST: public DeclarationAST {
             : identifiers(std::move(list)){ this->type = type; };
 
         void PrintNode(int depth) override;
+        llvm::Value* codegen() override {return nullptr;};
         std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
@@ -168,6 +173,7 @@ class VariableDeclarationsAST: public DeclarationAST {
         VariableDeclarationsAST(std::vector<std::unique_ptr<AST>> declarations):declarations(std::move(declarations)){};
 
         void PrintNode(int depth) override;
+        llvm::Value* codegen() override {return nullptr;};
         std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
@@ -179,6 +185,7 @@ class ConstantDeclarationsAST: public DeclarationAST {
         ConstantDeclarationsAST(std::vector<ValueNamePair> constants): constants(constants){};
 
         void PrintNode(int depth) override;
+        llvm::Value* codegen() override {return nullptr;};
         std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
@@ -242,7 +249,7 @@ class WhileExpressionAST: public AST{
 
 // Functions, Prototypes, and Procedures
 
-class PrototypeAST: public AST{
+class PrototypeAST: public DeclarationAST{
     private:
         std::string name;
         std::vector<TypeNamePair> Args;
@@ -256,9 +263,10 @@ class PrototypeAST: public AST{
 
         void PrintNode(int depth) override;
         llvm::Value* codegen() override;
+        std::vector<llvm::AllocaInst*> DoAllocations() override {return{};};
 };
 
-class FunctionAST: public AST {
+class FunctionAST: public DeclarationAST {
     private:
         std::unique_ptr<AST> prototype;
         std::unique_ptr<AST> body;
@@ -268,7 +276,8 @@ class FunctionAST: public AST {
             : prototype(std::move(prototype)), body(std::move(body)){};
 
         void PrintNode(int depth) override;
-        llvm::Value* codegen() override;
+        llvm::Value* codegen() override { return nullptr; };
+        std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
 #endif

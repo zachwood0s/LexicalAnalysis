@@ -10,7 +10,10 @@ void MainBlockAST::PrintNode(int depth){
 
 void ProgramAST::PrintNode(int depth){
     PRINTDPETH(depth, "Program: %s\n",programName.c_str());
-    block->PrintNode(depth);
+    for(int i = 0; i<declarations.size(); i++){
+        declarations[i]->PrintNode(depth);
+    }
+    statementSequence->PrintNode(depth);
 }
 
 void StatementSequenceAST::PrintNode(int depth){

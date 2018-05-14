@@ -19,6 +19,8 @@ stdlib.h
 -
 llvm/IR/Value.h
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/llvm/IR/Value.h
+llvm/IR/Instructions.h
+/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/llvm/IR/Instructions.h
 lexar.h
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/lexar.h
 
@@ -27,6 +29,8 @@ ast.h
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/ast.h
 llvm/ADT/APSInt.h
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/llvm/ADT/APSInt.h
+llvm/ADT/APFloat.h
+/home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/llvm/ADT/APFloat.h
 llvm/ADT/STLExtras.h
 /home/zach/Documents/Projects/C++/ProgrammingLanguagesAndCompilers/FirstLexical/src/llvm/ADT/STLExtras.h
 llvm/IR/BasicBlock.h

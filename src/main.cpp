@@ -34,7 +34,9 @@ int main(int argc, char *argv[]){
     Parser parser = Parser(&lexar);
     parser.Parse(); 
     parser.tree->PrintNode(0);
-	printf("\n\nEnd.\n");
+	printf("\n\nEnd ast print.\n");
+    printf("\nBeginning codegen\n");
+    parser.tree->codegen();
 	return 0;
 }
 
