@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include "llvm/IR/Value.h"
+#include "llvm/IR/Instructions.h"
 
 #include "lexar.h"
 
@@ -142,7 +143,12 @@ class ComparisonOpAST: public AST {
 
 // Declarations
 
-class VariableDeclarationsOfTypeAST: public AST {
+class DeclarationAST : public AST{
+    public:
+        virtual std::vector<llvm::AllocaInst*> DoAllocations();
+};
+
+class VariableDeclarationsOfTypeAST: public DeclarationAST {
     private:
         LexicalTokenType type;
         std::vector<std::unique_ptr<VariableIdentifierAST>> identifiers;
@@ -152,28 +158,28 @@ class VariableDeclarationsOfTypeAST: public AST {
             : identifiers(std::move(list)){ this->type = type; };
 
         void PrintNode(int depth) override;
-        llvm::Value* codegen() override;
+        std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
-class VariableDeclarationsAST: public AST {
+class VariableDeclarationsAST: public DeclarationAST {
     private:
         std::vector<std::unique_ptr<AST>> declarations;
     public:
         VariableDeclarationsAST(std::vector<std::unique_ptr<AST>> declarations):declarations(std::move(declarations)){};
 
         void PrintNode(int depth) override;
-        llvm::Value* codegen() override;
+        std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
 
-class ConstantDeclarationsAST: public AST {
+class ConstantDeclarationsAST: public DeclarationAST {
     private:
         std::vector<ValueNamePair> constants;
     public:
         ConstantDeclarationsAST(std::vector<ValueNamePair> constants): constants(constants){};
 
         void PrintNode(int depth) override;
-        llvm::Value* codegen() override;
+        std::vector<llvm::AllocaInst*> DoAllocations() override;
 };
 
 // Expressions
@@ -262,7 +268,7 @@ class FunctionAST: public AST {
             : prototype(std::move(prototype)), body(std::move(body)){};
 
         void PrintNode(int depth) override;
-        virtual llvm::Value* codegen();
+        llvm::Value* codegen() override;
 };
 
 #endif

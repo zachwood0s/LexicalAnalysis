@@ -34,7 +34,7 @@ Value* LogErrorV(const char *str){
 
 
 Value* MainBlockAST::codegen(){
-
+    //Remember I want to call the DoAllocations on the declarations not code gen. will need to cast
 }
 
 Value* ProgramAST::codegen(){
@@ -94,7 +94,7 @@ Value* ComparisonOpAST::codegen(){
 
 }
 
-Value* VariableDeclarationsOfTypeAST::codegen(){
+std::vector<AllocaInst*> VariableDeclarationsOfTypeAST::DoAllocations(){
     std::vector<AllocaInst *> OldBindings;
 
     Function *TheFunction = builder.GetInsertBlock()->getParent();
@@ -110,7 +110,15 @@ Value* VariableDeclarationsOfTypeAST::codegen(){
 
         namedValues[VarName] = Alloca;
     }
-    //TODO Im tire and want to go to bed
+
+    //Not sure if I want to return a map with the name and the old binding.
+    //Im gonna try resetting the namedValue by doing:
+    //if(Alloca)
+    //  namedValues[Alloca->getName()] = Alloca;
+    //
+    //That's not what they did in the tutorial but I think it should work
+    return OldBindings;
+    //TODO Im tired and want to go to bed
     //but the problem is in the tutorial they call the body gen code
     //from in here and then reset the vars but in mine it 
     //wont happen that way. I think what I need
@@ -118,13 +126,16 @@ Value* VariableDeclarationsOfTypeAST::codegen(){
     //code is created.
 }
 
-Value* VariableDeclarationsAST::codegen(){
-    for(auto &Decl : this->declarations)
-        Decl->codegen();
-    return nullptr;
+std::vector<AllocaInst *> VariableDeclarationsAST::DoAllocations(){
+    std::vector<AllocaInst *> OldBindings;
+    for(auto &Decl : this->declarations){
+        auto old = dynamic_cast<DeclarationAST*>(Decl.get())->DoAllocations();
+        OldBindings.insert(OldBindings.end(), old.begin(), old.end());
+    }
+    return OldBindings;
 }
 
-Value* ConstantDeclarationsAST::codegen(){
+std::vector<AllocaInst *> ConstantDeclarationsAST::DoAllocations(){
 
 }
 
