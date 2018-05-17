@@ -20,7 +20,10 @@ add_executable(compiler src/main.cpp src/parser.cpp src/lexar.cpp src/print_ast.
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
-llvm_map_components_to_libnames(llvm_libs support core irreader)
+llvm_map_components_to_libnames(llvm_libs support core bitwriter)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Link against LLVM libraries
 target_link_libraries(compiler ${llvm_libs})
+# $ clang++ -g -O3 toy.cpp `llvm-config --cxxflags --ldflags --system-libs --libs all` -o toy
+#   clang++ -g toy.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core mcjit native` -O3 -o toy

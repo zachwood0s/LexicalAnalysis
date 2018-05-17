@@ -311,7 +311,9 @@ std::unique_ptr<AST> Parser::IfStatment(){
     Consume(KW_IF);
     auto cond = Expression();
     Consume(KW_THEN);
-    return llvm::make_unique<IfExpressionAST>(std::move(cond), Statement(), IfStatmentPrime());
+    auto thenPart = Statement();
+    auto elsePart = IfStatmentPrime();
+    return llvm::make_unique<IfExpressionAST>(std::move(cond), std::move(thenPart), std::move(elsePart));
 }
 
 std::unique_ptr<AST> Parser::IfStatmentPrime(){

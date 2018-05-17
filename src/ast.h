@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Module.h"
 
 #include "lexar.h"
 
@@ -29,6 +30,7 @@ class AST {
         virtual ~AST(){};
         virtual void PrintNode(int depth){};
         virtual llvm::Value* codegen() = 0;
+        
 };
 
 // Main Parts
@@ -52,8 +54,10 @@ class ProgramAST: public AST{
         std::string programName;
         std::vector<std::unique_ptr<AST>> declarations;
         std::unique_ptr<AST> statementSequence;
+        std::unique_ptr<llvm::Module> llvmModule;
 
     public:
+        std::unique_ptr<llvm::Module> GetModule(){return std::move(llvmModule);};
         ProgramAST(const std::string &name,
                    std::vector<std::unique_ptr<AST>> declarations,
                      std::unique_ptr<AST> statementSequence)

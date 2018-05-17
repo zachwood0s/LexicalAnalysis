@@ -69,7 +69,7 @@ Value* ProgramAST::codegen(){
     theModule = llvm::make_unique<Module>(programName, theContext);
 
     FunctionType *FT = FunctionType::get(Type::getVoidTy(theContext), false);
-    Function *F = Function::Create(FT, Function::ExternalLinkage, "__mainprogram__", theModule.get());
+    Function *F = Function::Create(FT, Function::ExternalLinkage, "main", theModule.get());
     BasicBlock *BB = BasicBlock::Create(theContext, "entry", F);
     builder.SetInsertPoint(BB);
 
@@ -85,12 +85,17 @@ Value* ProgramAST::codegen(){
         else{
             auto oldBind = decl->DoAllocations();
         }
+        builder.SetInsertPoint(BB);
     }
-    builder.SetInsertPoint(BB);
     Value* BodyVal = statementSequence->codegen();
     if(!BodyVal)
         return nullptr;
+
+    builder.CreateRetVoid();
+    verifyFunction(*F);
+
     theModule->print(errs(), nullptr);
+    llvmModule = std::move(theModule);
     return BodyVal;
 }
 
@@ -102,13 +107,15 @@ Value* StatementSequenceAST::codegen(){
 }
 
 Value* NumberAST::codegen(){
-    return ConstantInt::get(theContext, APSInt(64, value));
+    return ConstantInt::get(theContext, APInt(64, value));
 }
 
 Value* VariableIdentifierAST::codegen(){
     Value* v = namedValues[name];
-    if(!v)
-        LogErrorV("Unknown variable name");
+    if(!v){
+        printf("Unknown variable name %s\n", name.c_str());
+        return nullptr;
+    }
 
     return builder.CreateLoad(v, name.c_str());
 }
@@ -117,6 +124,10 @@ Value* UnaryOpAST::codegen(){
     return expression->codegen();
 }
 
+// So I think what I should do instead is create a variable with the same name as the function
+// So assignment still works, and everything. then when returning, we just return what is currently
+// assigned to that variable and remove the variable from the named values list.
+
 Value* BinaryOpAST::codegen(){
     Value* L = LHS->codegen();
     Value* R = RHS->codegen();
@@ -124,22 +135,26 @@ Value* BinaryOpAST::codegen(){
         return nullptr;
 
     switch(op){
-        case PLUS: return builder.CreateFAdd(L, R, "addtmp");
-        case MINUS: return builder.CreateFSub(L, R, "subtmp");
-        case TIMES: return builder.CreateFMul(L, R, "multmp");
-        case DIV: return builder.CreateFDiv(L, R, "divtmp");
+        case PLUS: return builder.CreateAdd(L, R, "addtmp");
+        case MINUS: return builder.CreateSub(L, R, "subtmp");
+        case TIMES: return builder.CreateMul(L, R, "multmp");
+        case DIV: return builder.CreateUDiv(L, R, "divtmp");
         case ASSIGN:
             {
+                printf("ASSIGNMENT\n");
+                //Get current function.
+                //if identifier name is current funcction name. create return with value of RHS
+                //easy peasy??
+                //printf("Assignment in function %s\n", theFunction->getName().data());
                 VariableIdentifierAST *LHSE = dynamic_cast<VariableIdentifierAST*>(LHS.get());
                 if(!LHSE)
                     return LogErrorV("left hand side of assignment must be a varaible");
-
+                
                 Value *Variable = namedValues[LHSE->GetName()];
                 if(!Variable){
                     printf("Unknown variable name %s\n", LHSE->GetName().c_str()); 
                     return nullptr;
                 }
-
 
                 builder.CreateStore(R, Variable);
                 return R;
@@ -213,7 +228,19 @@ std::vector<AllocaInst *> ConstantDeclarationsAST::DoAllocations(){
 }
 
 Value* CallExpessionsAst::codegen(){
-    Function* CalleeF = theModule->getFunction(Callee);
+    Function* CalleeF;
+
+    if(Callee == "writeln"){
+        auto constFunc = theModule->getOrInsertFunction("printf", FunctionType::get(IntegerType::getInt32Ty(theContext), PointerType::get(Type::getInt8Ty(theContext), 0), true /* this is var arg func type*/));
+        CalleeF = static_cast<Function*>(constFunc);
+    }
+    else if(Callee == "exit"){
+        auto constFunc = theModule->getOrInsertFunction("exit", FunctionType::get(Type::getVoidTy(theContext), Type::getInt32Ty(theContext)));
+        CalleeF = static_cast<Function*>(constFunc);
+    }
+    else{
+        CalleeF = theModule->getFunction(Callee);
+    }
     if(!CalleeF){
         printf("Unknown function referenced: %s\n", Callee.c_str());
         return nullptr;
@@ -223,6 +250,12 @@ Value* CallExpessionsAst::codegen(){
         return LogErrorV("Incorrect # arguments passed");
 
     std::vector<Value*> ArgsV;
+    if(Callee == "writeln"){
+        ArgsV.push_back(builder.CreateGlobalStringPtr("%d\n", "strtmp"));
+    }
+    else if(Callee == "exit"){
+        ArgsV.push_back(ConstantInt::get(theContext, APInt(32, 0)));
+    }
     for(int i = 0; i<Args.size(); i++){
         ArgsV.push_back(Args[i]->codegen());
         if(!ArgsV.back())
@@ -310,14 +343,14 @@ Value* ForExpressionAST::codegen(){
         StepVal = ConstantInt::get(theContext, APSInt(64, 1));
     }
     Value *CurVar = builder.CreateLoad(Alloca, loopVarName.c_str());
-    Value *NextVar = builder.CreateFAdd(CurVar, StepVal, "nextvar");
+    Value *NextVar = builder.CreateAdd(CurVar, StepVal, "nextvar");
     builder.CreateStore(NextVar, Alloca);
 
     Value *EndCond = end->codegen();
     if(!EndCond)
         return nullptr;
 
-    EndCond = builder.CreateFCmpONE(EndCond, ConstantInt::get(theContext, APSInt(64, 0)), "loopcond");
+    EndCond = builder.CreateICmpNE(EndCond, ConstantInt::get(theContext, APSInt(64, 0)), "loopcond");
 
     BasicBlock *AfterBB = BasicBlock::Create(theContext, "afterloop", TheFunction);
     builder.CreateCondBr(EndCond, LoopBB, AfterBB);
@@ -378,10 +411,17 @@ std::vector<AllocaInst*> FunctionAST::DoAllocations(){
         OldBindings.push_back(namedValues[Arg.getName()]);
         namedValues[Arg.getName()] = Alloca;
     }
+    //Create the return variable
+    AllocaInst *FunctionRetVal = CreateEntryBlockAlloca(theFunction, proto->GetName());
 
-    if(Value *RetVal = body->codegen()){
-        //builder.CreateRetVoid();
-        builder.CreateRet(RetVal);
+    //return ConstantInt::get(theContext, APInt(64, value));
+    builder.CreateStore(ConstantInt::get(theContext, APInt(64, 0)), FunctionRetVal);
+    OldBindings.push_back(namedValues[proto->GetName()]);
+    namedValues[proto->GetName()] = FunctionRetVal;
+
+    if(Value *BodyVal = body->codegen()){
+        auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
+        builder.CreateRet(loadedRetVal);
         verifyFunction(*theFunction);
         return OldBindings;
     }
