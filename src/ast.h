@@ -204,6 +204,9 @@ class CallExpessionsAst: public AST {
                           std::vector<std::unique_ptr<AST>> Args)
             : Callee(callee), Args(std::move(Args)){}
 
+        CallExpessionsAst(const std::string &callee)
+            : Callee(callee){}
+
         void PrintNode(int depth) override;
         llvm::Value* codegen() override;
 };
@@ -264,6 +267,7 @@ class PrototypeAST: public DeclarationAST{
             : name(name), Args(std::move(Args)){ this->returnType = returnType; };
 
         const std::string &GetName() const {return name;}
+        const LexicalTokenType GetReturnType() const {return returnType;}
 
         void PrintNode(int depth) override;
         llvm::Value* codegen() override;

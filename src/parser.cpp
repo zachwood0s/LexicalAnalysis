@@ -2,6 +2,8 @@
 #include "parser.h"
 #include "lexar.h"
 
+static std::vector<std::string> functionNames = {"exit", "writeln", "readln"};
+
 Parser::Parser(Lexar* lexar){
     this->lexar = lexar;
 }
@@ -412,21 +414,23 @@ std::unique_ptr<AST> Parser::RegularStatementPrime(std::string identifierName){
     switch(currentToken.type){
         case ASSIGN:
             {
-                //TODO
                 auto var = llvm::make_unique<VariableIdentifierAST>(identifierName);
                 return llvm::make_unique<BinaryOpAST>(ASSIGN, std::move(var), AssignmentStatement());
-                break;
             }
         case LEFTPAREN:
             {
                 auto args = ProcdureStatement();
                 return llvm::make_unique<CallExpessionsAst>(identifierName, std::move(args));
-                break;
             }
         default:
             {
-                ConsumeError(ASSIGN);
-                break;
+                if(std::find(functionNames.begin(), functionNames.end(),identifierName) != functionNames.end()){
+                    //Is function with no args
+                    return llvm::make_unique<CallExpessionsAst>(identifierName);
+                }
+                else{
+                    ConsumeError(ASSIGN);
+                }
             }
     }
     return nullptr;

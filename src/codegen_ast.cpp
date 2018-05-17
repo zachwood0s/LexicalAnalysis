@@ -1,3 +1,15 @@
+
+
+/*
+ * TODO:
+ *
+ * Functions and procedure return type distinction
+ * DONE - Procedure and function calls with no args
+ * Constants
+ * While Loop
+ * Arrays and actually specifing types
+ *
+ */
 #include "ast.h"
 
 #include "llvm/ADT/APSInt.h"
@@ -235,7 +247,7 @@ Value* CallExpessionsAst::codegen(){
         CalleeF = static_cast<Function*>(constFunc);
     }
     else if(Callee == "exit"){
-        auto constFunc = theModule->getOrInsertFunction("exit", FunctionType::get(Type::getVoidTy(theContext), Type::getInt32Ty(theContext)));
+        auto constFunc = theModule->getOrInsertFunction("exit", FunctionType::get(Type::getVoidTy(theContext), Type::getInt32Ty(theContext), false));
         CalleeF = static_cast<Function*>(constFunc);
     }
     else{
@@ -246,10 +258,9 @@ Value* CallExpessionsAst::codegen(){
         return nullptr;
     }
 
-    if(CalleeF->arg_size() != Args.size())
-        return LogErrorV("Incorrect # arguments passed");
 
     std::vector<Value*> ArgsV;
+
     if(Callee == "writeln"){
         ArgsV.push_back(builder.CreateGlobalStringPtr("%d\n", "strtmp"));
     }
@@ -261,7 +272,19 @@ Value* CallExpessionsAst::codegen(){
         if(!ArgsV.back())
             return nullptr;
     }
-    return builder.CreateCall(CalleeF, ArgsV, "calltmp");
+
+    if(CalleeF->arg_size() != ArgsV.size() && CalleeF->arg_size() != Args.size()){
+        printf("%s: %d wanted %d\n", Callee.c_str(), (int) ArgsV.size(),(int) CalleeF->arg_size());
+        return LogErrorV("Incorrect # arguments passed");
+    }
+
+    if(CalleeF->getReturnType() == Type::getVoidTy(theContext)){
+        printf("returning void");
+        return builder.CreateCall(CalleeF, ArgsV);
+    }
+    else{
+        return builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    }
 }
 
 Value* IfExpressionAST::codegen(){
@@ -371,7 +394,9 @@ Value* WhileExpressionAST::codegen(){
 Value* PrototypeAST::codegen(){
     std::vector<Type*> Ints(Args.size(), Type::getInt64Ty(theContext));
 
-    FunctionType *FT = FunctionType::get(Type::getInt64Ty(theContext), Ints, false);
+    FunctionType *FT;
+    if(returnType == EOI) FT = FunctionType::get(Type::getVoidTy(theContext), Ints, false);
+    else FT = FunctionType::get(Type::getInt64Ty(theContext), Ints, false);
 
     Function *F = Function::Create(FT, Function::ExternalLinkage, name, theModule.get());
 
@@ -420,8 +445,10 @@ std::vector<AllocaInst*> FunctionAST::DoAllocations(){
     namedValues[proto->GetName()] = FunctionRetVal;
 
     if(Value *BodyVal = body->codegen()){
-        auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
-        builder.CreateRet(loadedRetVal);
+        if(proto->GetReturnType() != EOI){
+            auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
+            builder.CreateRet(loadedRetVal);
+        }
         verifyFunction(*theFunction);
         return OldBindings;
     }

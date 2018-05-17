@@ -18,7 +18,7 @@ end;
 procedure test(n: integer);
 begin
     writeln(n);
-        {exit;}
+    exit;
 end;
 
 var J:integer;
