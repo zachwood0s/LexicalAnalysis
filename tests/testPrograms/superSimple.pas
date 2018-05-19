@@ -1,31 +1,34 @@
 program supersimple;
 
-procedure test(n: integer); forward;
-procedure factorization(n: integer);
-var I, TEMP, NUM, SUM : integer;
+function factor(n: integer): integer;
+var I, J: integer;
 begin
-    if n = 1 then 
+    if n < 4 then
     begin
-        factorization := 1;
-        I := 5;
+        writeln(n);
+        if n < 3 then exit;
+        writeln(n-3);
     end
-    else
-        factorization := n * factorization(n-1);
+    else 
+        writeln(n+1);
 
-    test(I);
+    for I:= 10 downto 0 do 
+    begin
+        if I = 4 then break
+        else if I = 5 then writeln(I + 10)
+        else if I > 7 then writeln(I - 10)
+        else 
+            for J:=0 to 4 do 
+            begin
+                if J = 3 then break;
+                writeln(J);
+            end;
+    end;
+    writeln(20);
 end;
 
-procedure test(n: integer);
 begin
-    writeln(n);
-    exit;
-end;
-
-var J:integer;
-
-begin
-    J:=3;
-    writeln(factorization(factorization(J)));
+    factor(3);
 end.
 
 {

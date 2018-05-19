@@ -149,6 +149,16 @@ class ComparisonOpAST: public AST {
         llvm::Value* codegen() override;
 };
 
+class ExitBreakStatementAST: public AST{
+    private:
+        LexicalTokenType exitOrBreak;
+
+    public:
+        ExitBreakStatementAST(LexicalTokenType exitOrBreak): exitOrBreak(exitOrBreak){};
+        void PrintNode(int depth) override;
+        llvm::Value* codegen() override;
+};
+
 // Declarations
 
 class DeclarationAST : public AST{

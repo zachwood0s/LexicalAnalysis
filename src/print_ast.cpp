@@ -47,6 +47,10 @@ void ComparisonOpAST::PrintNode(int depth){
     RHS->PrintNode(depth+1);
 }
 
+void ExitBreakStatementAST::PrintNode(int depth){
+    PRINTDPETH(depth, "%s\n", lexicalTokenNames[exitOrBreak]);
+}
+
 void VariableDeclarationsOfTypeAST::PrintNode(int depth){
     PRINTDPETH(depth, "Variable declarations of type: %s\n", lexicalTokenNames[type]);
     for(int i = 0; i<identifiers.size(); i++){

@@ -8,9 +8,8 @@
  * Constants
  * While Loop
  * Arrays and actually specifing types
- * DONE - To and Downto
- * NEXT - readln
- * DONE - break and exit
+ * To and Downto
+ * readln
  */
 #include "ast.h"
 
@@ -42,13 +41,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction,
     return TmpB.CreateAlloca(Type::getInt64Ty(theContext), 0, VarName.c_str());
 }
 
-//This is a really shitty way to do this.
-//But I think I'd have to rework a lot of my codegen otherwise
-//And I don't have time to do that
 static BasicBlock* lastFunctionReturnBlock;
-static bool hasBrokeFromFunctionInBlock;
 static BasicBlock* lastLoopEndBlock;
-static bool hasBrokeFromLoopInBlock;
 
 Value* LogErrorV(const char *str){
     fprintf(stderr, "Error: %s\n", str);
@@ -122,12 +116,10 @@ Value* ProgramAST::codegen(){
 }
 
 Value* StatementSequenceAST::codegen(){
-    for(int i = 0; i<statements.size(); i++){
-        if(!hasBrokeFromLoopInBlock && !hasBrokeFromFunctionInBlock){
-            statements[i]->codegen();
-        }
+    for(int i = 0; i<statements.size()-1; i++){
+        statements[i]->codegen();
     }
-    return Constant::getNullValue(Type::getInt64Ty(theContext));
+    return statements[statements.size()-1]->codegen();
 }
 
 Value* NumberAST::codegen(){
@@ -207,16 +199,7 @@ Value* ComparisonOpAST::codegen(){
 }
 
 Value* ExitBreakStatementAST::codegen(){
-    if(exitOrBreak == KW_EXIT){
-        builder.CreateBr(lastFunctionReturnBlock);
-        hasBrokeFromFunctionInBlock = true;
-        return Constant::getNullValue(Type::getInt64Ty(theContext));
-    }
-    else{
-        builder.CreateBr(lastLoopEndBlock);
-        hasBrokeFromLoopInBlock = true;
-        return Constant::getNullValue(Type::getInt64Ty(theContext));
-    }
+
 }
 
 std::vector<AllocaInst*> VariableDeclarationsOfTypeAST::DoAllocations(){
@@ -235,7 +218,20 @@ std::vector<AllocaInst*> VariableDeclarationsOfTypeAST::DoAllocations(){
 
         namedValues[VarName] = Alloca;
     }
+
+    //Not sure if I want to return a map with the name and the old binding.
+    //Im gonna try resetting the namedValue by doing:
+    //if(Alloca)
+    //  namedValues[Alloca->getName()] = Alloca;
+    //
+    //That's not what they did in the tutorial but I think it should work
     return OldBindings;
+    //TODO Im tired and want to go to bed
+    //but the problem is in the tutorial they call the body gen code
+    //from in here and then reset the vars but in mine it 
+    //wont happen that way. I think what I need
+    //to do is return the old vars back out so that they can be reset after the body
+    //code is created.
 }
 
 std::vector<AllocaInst *> VariableDeclarationsAST::DoAllocations(){
@@ -315,50 +311,36 @@ Value* IfExpressionAST::codegen(){
     builder.CreateCondBr(CondV, thenBB, elseBB);
 
     builder.SetInsertPoint(thenBB);
+    Value *ThenV = thenPart->codegen();
+    if(!ThenV)
+        return nullptr;
 
-    //Im sorry for this...
-    bool oldHasBrokeFunction = hasBrokeFromFunctionInBlock;
-    bool oldHasBrokeLoop = hasBrokeFromLoopInBlock;
-
-    thenPart->codegen();
-
-    if(!hasBrokeFromLoopInBlock && !hasBrokeFromFunctionInBlock){
-        builder.CreateBr(mergeBB);
-    }
-    hasBrokeFromFunctionInBlock = oldHasBrokeFunction;
-    hasBrokeFromLoopInBlock = oldHasBrokeLoop;
-
+    builder.CreateBr(mergeBB);
     thenBB = builder.GetInsertBlock();
 
     theFunction->getBasicBlockList().push_back(elseBB);
     builder.SetInsertPoint(elseBB);
 
-    Value *ThenV = Constant::getNullValue(Type::getInt64Ty(theContext));
-    Value *ElseV = Constant::getNullValue(Type::getInt64Ty(theContext));
+    Value *ElseV;
+    if(elsePart)
+        ElseV = elsePart->codegen();
+    else
+        ElseV = Constant::getNullValue(Type::getInt64Ty(theContext));
 
-    //Im sorry for this again...
-    oldHasBrokeFunction = hasBrokeFromFunctionInBlock;
-    oldHasBrokeLoop = hasBrokeFromLoopInBlock;
+    if(!ElseV)
+        return nullptr;
 
-    if(elsePart) elsePart->codegen();
-
-    if(!hasBrokeFromLoopInBlock && !hasBrokeFromFunctionInBlock){
-        builder.CreateBr(mergeBB);
-    }
-
-    hasBrokeFromFunctionInBlock = oldHasBrokeFunction;
-    hasBrokeFromLoopInBlock = oldHasBrokeLoop;
-
+    builder.CreateBr(mergeBB);
     elseBB = builder.GetInsertBlock();
     
     theFunction->getBasicBlockList().push_back(mergeBB);
     builder.SetInsertPoint(mergeBB);
-    //PHINode *PN = builder.CreatePHI(Type::getInt64Ty(theContext), 2, "iftmp");
+    PHINode *PN = builder.CreatePHI(Type::getInt64Ty(theContext), 2, "iftmp");
 
-    //PN->addIncoming(ThenV, thenBB);
-    //PN->addIncoming(ElseV, elseBB);
+    PN->addIncoming(ThenV, thenBB);
+    PN->addIncoming(ElseV, elseBB);
 
-    return Constant::getNullValue(Type::getInt64Ty(theContext));
+    return PN;
 }
 
 Value* ForExpressionAST::codegen(){
@@ -381,30 +363,18 @@ Value* ForExpressionAST::codegen(){
     AllocaInst *OldVal = namedValues[loopVarName];
     namedValues[loopVarName] = Alloca;
 
-
-    BasicBlock *AfterBB = BasicBlock::Create(theContext, "afterloop", TheFunction);
-    auto oldLastLoopEndBlock = lastLoopEndBlock;
-    lastLoopEndBlock = AfterBB;
-
     if(!body->codegen())
         return nullptr;
 
-    lastLoopEndBlock = oldLastLoopEndBlock;
-
     Value *StepVal = nullptr;
-    /*if(step){
+    if(step){
         StepVal = step->codegen();
         if(!StepVal)
             return nullptr;
     }
-    else{*/
-    if(direction == KW_TO){
-        StepVal = ConstantInt::get(theContext, APInt(64, 1));
-    }
     else{
-        StepVal = ConstantInt::get(theContext, APInt(64, -1));
+        StepVal = ConstantInt::get(theContext, APSInt(64, 1));
     }
-    //}
     Value *CurVar = builder.CreateLoad(Alloca, loopVarName.c_str());
     Value *NextVar = builder.CreateAdd(CurVar, StepVal, "nextvar");
     builder.CreateStore(NextVar, Alloca);
@@ -413,9 +383,10 @@ Value* ForExpressionAST::codegen(){
     if(!EndCond)
         return nullptr;
 
-    auto EndCondV = builder.CreateICmpNE(EndCond, CurVar, "loopcond");
+    EndCond = builder.CreateICmpNE(EndCond, ConstantInt::get(theContext, APSInt(64, 0)), "loopcond");
 
-    builder.CreateCondBr(EndCondV, LoopBB, AfterBB);
+    BasicBlock *AfterBB = BasicBlock::Create(theContext, "afterloop", TheFunction);
+    builder.CreateCondBr(EndCond, LoopBB, AfterBB);
     builder.SetInsertPoint(AfterBB);
 
     if(OldVal)
@@ -466,6 +437,12 @@ std::vector<AllocaInst*> FunctionAST::DoAllocations(){
 
     //Create return point
     BasicBlock *RetBlock = BasicBlock::Create(theContext, "return", theFunction);
+    builder.SetInsertPoint(RetBlock);
+    if(proto->GetReturnType() != EOI){
+        auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
+        builder.CreateRet(loadedRetVal);
+    }
+    lastFunctionReturnBlock = RetBlock;
 
     builder.SetInsertPoint(BB);
 
@@ -487,24 +464,7 @@ std::vector<AllocaInst*> FunctionAST::DoAllocations(){
     OldBindings.push_back(namedValues[proto->GetName()]);
     namedValues[proto->GetName()] = FunctionRetVal;
 
-    builder.SetInsertPoint(RetBlock);
-    if(proto->GetReturnType() != EOI){
-        auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
-        builder.CreateRet(loadedRetVal);
-    }
-    lastFunctionReturnBlock = RetBlock;
-
-    builder.SetInsertPoint(BB);
-
-    //Again... I'm so sorry for this. 
-    bool oldHasBrokeLoop = hasBrokeFromLoopInBlock;
-    bool oldHasBrokeFunction = hasBrokeFromFunctionInBlock;
     if(Value *BodyVal = body->codegen()){
-        if(!hasBrokeFromFunctionInBlock){
-            builder.CreateBr(RetBlock);
-        }
-        hasBrokeFromLoopInBlock = oldHasBrokeLoop;
-        hasBrokeFromFunctionInBlock = oldHasBrokeFunction;
         verifyFunction(*theFunction);
         return OldBindings;
     }

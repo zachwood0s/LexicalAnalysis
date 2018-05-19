@@ -6,12 +6,12 @@
 
 using namespace std;
 
-const char *lexicalTokenNames[49] = {
+const char *lexicalTokenNames[51] = {
 	"IDENTIFIER", "NUMBER", "PLUS", "MINUS", "TIMES", "DIVIDE", "AND", "OR", "MOD", "DIV",
 	"EQUAL", "NOTEQUAL", "LESSTHAN", "GREATERTHAN", "LESSTHANEQ", "GREATERTHANEQ",
 	"LEFTPAREN", "RIGHTPAREN", "LEFTBRACKET", "RIGHTBRACKET",
 	"ASSIGN", "COMMA", "COLON", "SEMICOLON", "DOT DOT", "DOT", "kwVAR", "kwCONST", 
-	"kwIF", "kwTHEN", "kwELSE", "kwBEGIN", "kwEND",  
+	"kwIF", "kwTHEN", "kwELSE", "kwBEGIN", "kwEND", "kwEXIT", "kwBREAK",
 	"kwWHILE", "kwDO", "kwREAD", "kwWRITE",
     "kwFOR", "kwTO", "kwDOWNTO",
     "kwPROGRAM", "kwPROCEDURE", "kwFUNCTION", "kwFORWARD", "kwARRAY", "kwINTEGER", "kwOF", 
@@ -38,6 +38,8 @@ const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"else", KW_ELSE},
 	{"while", KW_WHILE},
 	{"for", KW_FOR},
+	{"exit", KW_EXIT},
+	{"break", KW_BREAK},
 	{"do", KW_DO},
 	{"mod", MOD},
 	{"div", DIV},

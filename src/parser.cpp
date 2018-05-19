@@ -269,7 +269,9 @@ std::unique_ptr<AST> Parser::StatementSequence(){
             currentToken.type == KW_FOR ||
             currentToken.type == KW_WHILE ||
             currentToken.type == KW_BEGIN ||
-            currentToken.type == IDENTIFIER){
+            currentToken.type == IDENTIFIER ||
+            currentToken.type == KW_EXIT ||
+            currentToken.type == KW_BREAK){
             statements.push_back(Statement());
         }
         else break;
@@ -399,6 +401,12 @@ std::unique_ptr<AST> Parser::BlockStatment(){
 }
 
 std::unique_ptr<AST> Parser::RegularStatement(){
+    if(currentToken.type == KW_EXIT ||
+       currentToken.type == KW_BREAK){
+        auto res = llvm::make_unique<ExitBreakStatementAST>(currentToken.type);
+        Consume(currentToken.type);
+        return res; 
+    }
     auto identName = currentToken.identifierName;
     Consume(IDENTIFIER);
     //array indexing
@@ -428,6 +436,7 @@ std::unique_ptr<AST> Parser::RegularStatementPrime(std::string identifierName){
                     //Is function with no args
                     return llvm::make_unique<CallExpessionsAst>(identifierName);
                 }
+                
                 else{
                     ConsumeError(ASSIGN);
                 }
