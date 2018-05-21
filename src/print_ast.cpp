@@ -65,9 +65,9 @@ void VariableDeclarationsAST::PrintNode(int depth){
 }
 
 void ConstantDeclarationsAST::PrintNode(int depth){
-    PRINTDPETH(depth, "Constant Declarations:");
+    PRINTDPETH(depth, "Constant Declarations:\n");
     for(int i = 0; i<constants.size(); i++){
-        PRINTDPETH(depth + 1, "\t%s => %d\n", constants[i].name.c_str(), constants[i].value);
+        PRINTDPETH(depth + 1, "%s => %d\n", constants[i].name.c_str(), constants[i].value);
     }
 }
 
@@ -110,9 +110,9 @@ void ForExpressionAST::PrintNode(int depth){
 
 void WhileExpressionAST::PrintNode(int depth){
     PRINTDPETH(depth, "While Expression:\n");
-    PRINTDPETH(depth, "Cond: \n");
+    PRINTDPETH(depth+1, "Cond: \n");
     cond->PrintNode(depth+1);
-    PRINTDPETH(depth, "Body:\n");
+    PRINTDPETH(depth+1, "Body:\n");
     body->PrintNode(depth+1);
 }
 

@@ -8,4 +8,5 @@ int main(){
         }
         printf("%d", testVar);
     }
+    scanf("%d", &testVar);
 }

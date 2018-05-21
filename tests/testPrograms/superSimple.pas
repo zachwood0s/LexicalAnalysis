@@ -2,8 +2,18 @@ program supersimple;
 
 function factor(n: integer): integer;
 var I, J: integer;
+const TEST = 5;
 begin
-    if n < 4 then
+    while n <= 5 do
+    begin
+        writeln(n);
+        readln(I);
+        if I > TEST then break;
+        n := n + 1;
+    end;
+    TEST := 12;
+    writeln(n);
+    {if n < 4 then
     begin
         writeln(n);
         if n < 3 then exit;
@@ -24,11 +34,14 @@ begin
                 writeln(J);
             end;
     end;
-    writeln(20);
+    writeln(20);}
 end;
 
+var N: integer;
+
 begin
-    factor(3);
+    readln(N);
+    factor(N);
 end.
 
 {

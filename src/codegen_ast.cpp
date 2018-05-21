@@ -5,11 +5,11 @@
  *
  * Functions and procedure return type distinction
  * DONE - Procedure and function calls with no args
- * Constants
- * While Loop
+ * DONE?- Constants
+ * DONE - While Loop
  * Arrays and actually specifing types
  * DONE - To and Downto
- * NEXT - readln
+ * DONE - readln
  * DONE - break and exit
  */
 #include "ast.h"
@@ -34,6 +34,7 @@ static llvm::LLVMContext theContext;
 static llvm::IRBuilder<> builder(theContext);
 static std::unique_ptr<llvm::Module> theModule;
 static std::map<std::string, AllocaInst*> namedValues;
+static std::vector<std::string> globalConstants;
 
 static AllocaInst *CreateEntryBlockAlloca(Function *theFunction,
         const std::string &VarName){
@@ -173,6 +174,8 @@ Value* BinaryOpAST::codegen(){
                 VariableIdentifierAST *LHSE = dynamic_cast<VariableIdentifierAST*>(LHS.get());
                 if(!LHSE)
                     return LogErrorV("left hand side of assignment must be a varaible");
+                if(std::find(globalConstants.begin(), globalConstants.end(), LHSE->GetName()) !=globalConstants.end())
+                    return LogErrorV("Cannot assign to a constant!");
                 
                 Value *Variable = namedValues[LHSE->GetName()];
                 if(!Variable){
@@ -248,7 +251,18 @@ std::vector<AllocaInst *> VariableDeclarationsAST::DoAllocations(){
 }
 
 std::vector<AllocaInst *> ConstantDeclarationsAST::DoAllocations(){
-    return {};
+    std::vector<AllocaInst *> OldBindings;
+    Function *TheFunction = builder.GetInsertBlock()->getParent();
+    for(auto Decl : this->constants){
+        globalConstants.push_back(Decl.name);
+        auto InitVal = ConstantInt::get(theContext, APInt(64, Decl.value));
+        
+        AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, Decl.name);
+        builder.CreateStore(InitVal, Alloca);
+        OldBindings.push_back(namedValues[Decl.name]);
+        namedValues[Decl.name] = Alloca;
+    }
+    return OldBindings;
 }
 
 Value* CallExpessionsAst::codegen(){
@@ -256,6 +270,10 @@ Value* CallExpessionsAst::codegen(){
 
     if(Callee == "writeln"){
         auto constFunc = theModule->getOrInsertFunction("printf", FunctionType::get(IntegerType::getInt32Ty(theContext), PointerType::get(Type::getInt8Ty(theContext), 0), true /* this is var arg func type*/));
+        CalleeF = static_cast<Function*>(constFunc);
+    }
+    else if(Callee == "readln"){
+        auto constFunc = theModule->getOrInsertFunction("__isoc99_scanf", FunctionType::get(IntegerType::getInt32Ty(theContext), PointerType::get(Type::getInt8Ty(theContext), 0), true /* this is var arg func type*/));
         CalleeF = static_cast<Function*>(constFunc);
     }
     /*
@@ -277,14 +295,29 @@ Value* CallExpessionsAst::codegen(){
     if(Callee == "writeln"){
         ArgsV.push_back(builder.CreateGlobalStringPtr("%d\n", "strtmp"));
     }
+    else if(Callee == "readln"){
+        ArgsV.push_back(builder.CreateGlobalStringPtr("%d", "strtmp"));
+    }
     /*
     else if(Callee == "exit"){
         ArgsV.push_back(ConstantInt::get(theContext, APInt(32, 0)));
     }*/
-    for(int i = 0; i<Args.size(); i++){
-        ArgsV.push_back(Args[i]->codegen());
-        if(!ArgsV.back())
+    if(Callee == "readln"){
+        auto arg = dynamic_cast<VariableIdentifierAST*>(Args[0].get());
+        if(!arg){
+            printf("Improper call to readln. Expected identifier\n");
             return nullptr;
+        }
+        Value* v = namedValues[arg->GetName()];
+        ArgsV.push_back(v);
+        //auto val = Args[i]
+    }
+    else{
+        for(int i = 0; i<Args.size(); i++){
+            ArgsV.push_back(Args[i]->codegen());
+            if(!ArgsV.back())
+                return nullptr;
+        }
     }
 
     if(CalleeF->arg_size() != ArgsV.size() && CalleeF->arg_size() != Args.size()){
@@ -333,8 +366,8 @@ Value* IfExpressionAST::codegen(){
     theFunction->getBasicBlockList().push_back(elseBB);
     builder.SetInsertPoint(elseBB);
 
-    Value *ThenV = Constant::getNullValue(Type::getInt64Ty(theContext));
-    Value *ElseV = Constant::getNullValue(Type::getInt64Ty(theContext));
+    //Value *ThenV = Constant::getNullValue(Type::getInt64Ty(theContext));
+    //Value *ElseV = Constant::getNullValue(Type::getInt64Ty(theContext));
 
     //Im sorry for this again...
     oldHasBrokeFunction = hasBrokeFromFunctionInBlock;
@@ -427,7 +460,38 @@ Value* ForExpressionAST::codegen(){
 }
 
 Value* WhileExpressionAST::codegen(){
-    return nullptr;
+
+    Function *TheFunction = builder.GetInsertBlock()->getParent();
+
+    BasicBlock *CondBB = BasicBlock::Create(theContext, "loopCond", TheFunction);
+    BasicBlock *LoopBB = BasicBlock::Create(theContext, "loop", TheFunction);
+
+    builder.CreateBr(CondBB);
+
+    builder.SetInsertPoint(CondBB);
+
+    Value *StartCond = cond->codegen();
+    if(!StartCond)
+        return nullptr;
+
+    BasicBlock *AfterBB = BasicBlock::Create(theContext, "afterloop", TheFunction);
+    auto StartCondV = builder.CreateICmpNE(StartCond, ConstantInt::get(theContext, APInt(1,0)), "loopcond");
+    builder.CreateCondBr(StartCondV, LoopBB, AfterBB);
+
+    builder.SetInsertPoint(LoopBB);
+    auto oldLastLoopEndBlock = lastLoopEndBlock;
+    lastLoopEndBlock = AfterBB;
+
+    if(!body->codegen())
+        return nullptr;
+
+    lastLoopEndBlock = oldLastLoopEndBlock;
+
+    builder.CreateBr(CondBB);
+
+    builder.SetInsertPoint(AfterBB);
+
+    return Constant::getNullValue(Type::getInt64Ty(theContext));
 }
 
 Value* PrototypeAST::codegen(){
