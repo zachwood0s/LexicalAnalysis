@@ -350,7 +350,6 @@ Value* CallExpessionsAst::codegen(){
     }
 
     if(CalleeF->getReturnType() == Type::getVoidTy(theContext)){
-        printf("returning void");
         return builder.CreateCall(CalleeF, ArgsV);
     }
     else{
@@ -487,7 +486,7 @@ Value* WhileExpressionAST::codegen(){
 
     Function *TheFunction = builder.GetInsertBlock()->getParent();
 
-    BasicBlock *CondBB = BasicBlock::Create(theContext, "loopCond", TheFunction);
+    BasicBlock *CondBB = BasicBlock::Create(theContext, "loopCondBB", TheFunction);
     BasicBlock *LoopBB = BasicBlock::Create(theContext, "loop", TheFunction);
 
     builder.CreateBr(CondBB);
@@ -579,6 +578,9 @@ std::vector<AllocaInst*> FunctionAST::DoAllocations(){
     if(proto->GetReturnType() != EOI){
         auto loadedRetVal = builder.CreateLoad(namedValues[proto->GetName()], proto->GetName());
         builder.CreateRet(loadedRetVal);
+    }
+    else{
+        builder.CreateRetVoid();
     }
     lastFunctionReturnBlock = RetBlock;
 
