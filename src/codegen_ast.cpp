@@ -6,11 +6,17 @@
  * Functions and procedure return type distinction
  * DONE - Procedure and function calls with no args
  * DONE?- Constants
- * DONE - While Loop
+ * DONE - While Loop NOPE, look at output from factorization.p
  * Arrays and actually specifing types
  * DONE - To and Downto
  * DONE - readln
  * DONE - break and exit
+ * mod div and other operators and or
+ *
+ * Samples problems
+ *  output from factorization.p. looks like problem with while loops
+ *  gcd and or wont work
+ *  dec() function in some places
  */
 #include "ast.h"
 

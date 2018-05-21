@@ -26,7 +26,9 @@ const struct {const char* word; LexicalTokenType symb;} keyWordTable[] ={
 	{"function", KW_FUNCTION},
 	{"forward", KW_FORWARD},
 	{"AND", AND},
-	{"OF", OR},
+	{"OR", OR},
+	{"and", AND},
+	{"or", OR},
 	{"const", KW_CONST},
 	{"begin", KW_BEGIN},
 	{"end", KW_END},
@@ -142,7 +144,7 @@ InputToken Lexar::ReadInput() {
 	InputToken input;
 	input.value = character;
 
-	if ((character>='A' && character<='Z') || (character>='a' && character<='z'))
+	if ((character>='A' && character<='Z') || (character>='a' && character<='z') || character == '_')
 	  input.type = LETTER;	
 	else if (character>='0' && character<='9')
 	  input.type = NUMB;
@@ -187,7 +189,7 @@ LexicalToken Lexar::HandleIdentKeyword(){
 	word.push_back(currentInput.value);
 
 	currentInput = ReadInput();
-	while(currentInput.type == NUMB || currentInput.type == LETTER){
+	while(currentInput.type == NUMB || currentInput.type == LETTER ){
 		word.push_back(currentInput.value);
 		currentInput = ReadInput();
 	}

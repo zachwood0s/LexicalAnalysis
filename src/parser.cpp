@@ -196,8 +196,8 @@ std::vector<TypeNamePair> Parser::ParameterList(){
         std::vector<TypeNamePair> params;
         params.push_back(Parameter());
         while(1){
-            if(currentToken.type == COMMA){
-                Consume(COMMA);
+            if(currentToken.type == SEMICOLON){
+                Consume(SEMICOLON);
                 params.push_back(Parameter());
             }
             else break;

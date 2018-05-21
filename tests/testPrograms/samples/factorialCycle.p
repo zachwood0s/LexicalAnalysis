@@ -8,7 +8,7 @@ begin
     readln(n);
     while(n >= 2) do begin
         f := f * n;
-	dec(n);
+	    dec(n);
     end;
     writeln(f);
 end.
