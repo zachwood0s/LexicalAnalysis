@@ -1,5 +1,12 @@
 program test;
 
+var I, J:integer;
 begin
-    writeln(34 mod 5);
+    I:=3;
+    J:=3;
+    inc(I);
+    dec(J);
+
+    writeln(I);
+    writeln(J);
 end.

@@ -177,10 +177,6 @@ Value* BinaryOpAST::codegen(){
         case ASSIGN:
             {
                 printf("ASSIGNMENT\n");
-                //Get current function.
-                //if identifier name is current funcction name. create return with value of RHS
-                //easy peasy??
-                //printf("Assignment in function %s\n", theFunction->getName().data());
                 VariableIdentifierAST *LHSE = dynamic_cast<VariableIdentifierAST*>(LHS.get());
                 if(!LHSE)
                     return LogErrorV("left hand side of assignment must be a varaible");
@@ -285,6 +281,24 @@ Value* CallExpessionsAst::codegen(){
     else if(Callee == "readln"){
         auto constFunc = theModule->getOrInsertFunction("__isoc99_scanf", FunctionType::get(IntegerType::getInt32Ty(theContext), PointerType::get(Type::getInt8Ty(theContext), 0), true /* this is var arg func type*/));
         CalleeF = static_cast<Function*>(constFunc);
+    }
+    else if(Callee == "dec" || Callee=="inc"){
+        auto var = dynamic_cast<VariableIdentifierAST*>(Args[0].get());
+        if(!var)
+            return LogErrorV("DEC must be called with a variable identifier");
+        
+        Value *Variable = namedValues[var->GetName()];
+        if(!Variable){
+            printf("Unknown variable name %s\n", var->GetName().c_str()); 
+            return nullptr;
+        }
+        Value* StepVal;
+        if(Callee == "dec") StepVal = ConstantInt::get(theContext, APInt(64, -1));
+        else StepVal = ConstantInt::get(theContext, APInt(64, 1));
+        
+        Value *CurVar = builder.CreateLoad(Variable, var->GetName().c_str());
+        Value *NextVar = builder.CreateAdd(CurVar, StepVal, "nextvar");
+        return builder.CreateStore(NextVar, Variable);
     }
     /*
     else if(Callee == "exit"){
