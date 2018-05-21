@@ -11,12 +11,13 @@
  * DONE - To and Downto
  * DONE - readln
  * DONE - break and exit
- * mod div and other operators and or
+ * DONE mod div and other operators and or
  *
  * Samples problems
  *  output from factorization.p. looks like problem with while loops
- *  gcd and or wont work
- *  dec() function in some places
+ *  DONE gcd and or wont work
+ *  dec() function in some places 
+ *  inc()
  */
 #include "ast.h"
 
@@ -170,6 +171,9 @@ Value* BinaryOpAST::codegen(){
         case MINUS: return builder.CreateSub(L, R, "subtmp");
         case TIMES: return builder.CreateMul(L, R, "multmp");
         case DIV: return builder.CreateUDiv(L, R, "divtmp");
+        case AND: return builder.CreateAnd(L, R, "andtmp");
+        case OR: return builder.CreateOr(L, R, "ortmp");                   
+        case MOD: return builder.CreateURem(L, R, "modtmp");
         case ASSIGN:
             {
                 printf("ASSIGNMENT\n");
