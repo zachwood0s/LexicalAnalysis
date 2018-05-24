@@ -2,7 +2,6 @@
 #include "parser.h"
 #include "lexar.h"
 
-static std::vector<std::string> functionNames = {"exit", "writeln", "readln"};
 
 Parser::Parser(Lexar* lexar){
     this->lexar = lexar;
@@ -194,13 +193,15 @@ std::vector<TypeNamePair> Parser::ParameterList(){
     if(currentToken.type == LEFTPAREN){
         Consume(LEFTPAREN);
         std::vector<TypeNamePair> params;
-        params.push_back(Parameter());
-        while(1){
-            if(currentToken.type == SEMICOLON){
-                Consume(SEMICOLON);
-                params.push_back(Parameter());
+        if(currentToken.type == IDENTIFIER){
+            params.push_back(Parameter());
+            while(1){
+                if(currentToken.type == SEMICOLON){
+                    Consume(SEMICOLON);
+                    params.push_back(Parameter());
+                }
+                else break;
             }
-            else break;
         }
         Consume(RIGHTPAREN);
         return params;
@@ -432,14 +433,7 @@ std::unique_ptr<AST> Parser::RegularStatementPrime(std::string identifierName){
             }
         default:
             {
-                if(std::find(functionNames.begin(), functionNames.end(),identifierName) != functionNames.end()){
-                    //Is function with no args
-                    return llvm::make_unique<CallExpessionsAst>(identifierName);
-                }
-                
-                else{
-                    ConsumeError(ASSIGN);
-                }
+               ConsumeError(ASSIGN);
             }
     }
     return nullptr;
@@ -461,6 +455,7 @@ std::vector<std::unique_ptr<AST>> Parser::ProcdureStatement(){
 }
 
 std::vector<std::unique_ptr<AST>> Parser::UsageParameterList(){
+    if(currentToken.type == RIGHTPAREN) return {};
     std::vector<std::unique_ptr<AST>> args;
     while(1){
         auto arg = UsageParameter();

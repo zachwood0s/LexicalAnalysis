@@ -1,5 +1,5 @@
 search_dir=./tests/testPrograms/samples
-for entry in "$search_dir"/*
+for entry in "$search_dir"/*.p
 do
   echo "Compiling $entry"
   base=$(basename $entry)

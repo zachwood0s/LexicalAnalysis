@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	char *fileName;
 
     if(argc != 3){
-        printf("Usage: simple-tool [src-path] [output-path]\n");
+        printf("Usage: compiler [src-path] [output-path]\n");
         return 0;
     }
 	fileName = argv[1];
