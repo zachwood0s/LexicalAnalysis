@@ -1,5 +1,15 @@
 # Semesteral Work 
 
+## Intro
+
+### What is this?
+
+For my programming languages and compilers course I was tasked with writing the front end of a compiler that creates either a GCC AST or LLVM Ir code. I chose LLVM partly because it was newer and seemed to have better documentation. My compiler will take pascal-looking code and spit out LLVM byte code which then gets compiled down to an executable.
+
+### What's in it?
+
+In this project you'll find the lexical analyzer, the parser, the AST, and the IR codegen for that AST.
+
 ## Usage
 
 I used cmake to make my project and link llvm but the project can be made by just running make. It compiles to an executable called compiler. Run it to see the usage. It will display an ast and the outputted llvm code. It then writes the bitcode to the filename provided. If you want to do a full compile (compiler -> llc -> gcc) I made a compile.sh that will run each of those taking only the source filename as input.
